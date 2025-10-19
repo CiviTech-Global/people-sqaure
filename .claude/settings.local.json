@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(if exist node_modules rmdir /s /q node_modules)",
+      "Bash(if exist package-lock.json del package-lock.json)",
+      "Bash(rm -rf node_modules package-lock.json)",
+      "Bash(npm install)",
+      "Bash(timeout 10 npm run dev)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
