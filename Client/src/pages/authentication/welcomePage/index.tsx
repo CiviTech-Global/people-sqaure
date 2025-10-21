@@ -2,6 +2,7 @@ import { Box, Typography, Container } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import BusinessIcon from "@mui/icons-material/Business";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import { GradientBackground, GlassCard, GlassButton } from "../../../components";
 import { glassColors, shadows, spacing, responsivePadding } from "../../../themes";
@@ -25,7 +26,7 @@ const WelcomePage = () => {
           boxSizing: "border-box",
         }}
       >
-        <GlassCard maxWidth="500px">
+        <GlassCard maxWidth="550px">
           <Typography
             variant="h3"
             component="h1"
@@ -59,7 +60,7 @@ const WelcomePage = () => {
                 icon={<RocketLaunchIcon sx={{ fontSize: { xs: "24px", sm: "28px" } }} />}
                 onClick={() => handleUserTypeClick("startup-owner")}
               >
-                Start-up Owner / Developer
+                Startup Owners/Developers
               </GlassButton>
             </Box>
 
@@ -68,7 +69,16 @@ const WelcomePage = () => {
                 icon={<AccountBalanceIcon sx={{ fontSize: { xs: "24px", sm: "28px" } }} />}
                 onClick={() => handleUserTypeClick("investor")}
               >
-                Investors, Sponsors, VCs, etc.
+                Investors, Sponsors, Venture Capitalists, etc.
+              </GlassButton>
+            </Box>
+
+            <Box sx={{ marginBottom: spacing.md }}>
+              <GlassButton
+                icon={<BusinessIcon sx={{ fontSize: { xs: "24px", sm: "28px" } }} />}
+                onClick={() => handleUserTypeClick("organization")}
+              >
+                Organizations and Enterprises
               </GlassButton>
             </Box>
 

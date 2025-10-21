@@ -1,10 +1,22 @@
 import { useState } from "react";
-import { Box, Typography, Container, Link } from "@mui/material";
+import { Box, Typography, Container, Link, InputAdornment } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import PersonIcon from "@mui/icons-material/Person";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
-import { GradientBackground, GlassCard, GlassButton, GlassTextField } from "../../../components";
+import WorkIcon from "@mui/icons-material/Work";
+import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import BusinessIcon from "@mui/icons-material/Business";
+import LightbulbIcon from "@mui/icons-material/Lightbulb";
+import {
+  GradientBackground,
+  GlassCard,
+  GlassButton,
+  GlassTextField,
+  GlassSelect,
+  MenuItem,
+} from "../../../components";
 import { glassColors, shadows, spacing } from "../../../themes";
 
 const Register = () => {
@@ -12,6 +24,7 @@ const Register = () => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
+    role: "",
     password: "",
     confirmPassword: "",
   });
@@ -23,9 +36,31 @@ const Register = () => {
     }));
   };
 
+  const handleRoleChange = (e: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      role: e.target.value,
+    }));
+  };
+
   const handleRegister = () => {
     console.log("Register attempt:", formData);
     // Registration logic will be implemented later
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case "startup-owner":
+        return <RocketLaunchIcon sx={{ fontSize: "20px" }} />;
+      case "investor":
+        return <AccountBalanceIcon sx={{ fontSize: "20px" }} />;
+      case "organization":
+        return <BusinessIcon sx={{ fontSize: "20px" }} />;
+      case "citizen":
+        return <LightbulbIcon sx={{ fontSize: "20px" }} />;
+      default:
+        return <WorkIcon sx={{ fontSize: "20px" }} />;
+    }
   };
 
   return (
@@ -38,7 +73,7 @@ const Register = () => {
           boxSizing: "border-box",
         }}
       >
-        <GlassCard maxWidth="450px">
+        <GlassCard maxWidth="500px">
           <Typography
             variant="h4"
             component="h1"
@@ -94,6 +129,65 @@ const Register = () => {
                   ),
                 }}
               />
+            </Box>
+
+            <Box sx={{ marginBottom: spacing.lg }}>
+              <GlassSelect
+                fullWidth
+                value={formData.role}
+                onChange={handleRoleChange}
+                displayEmpty
+                startAdornment={
+                  <InputAdornment position="start">
+                    {formData.role ? (
+                      getRoleIcon(formData.role)
+                    ) : (
+                      <WorkIcon sx={{ color: "rgba(255, 255, 255, 0.6)" }} />
+                    )}
+                  </InputAdornment>
+                }
+                renderValue={(selected) => {
+                  if (!selected) {
+                    return (
+                      <Typography sx={{ color: "rgba(255, 255, 255, 0.6)" }}>
+                        Select Your Role
+                      </Typography>
+                    );
+                  }
+                  const roleLabels: { [key: string]: string } = {
+                    "startup-owner": "Startup Owners/Developers",
+                    investor: "Investors, Sponsors, Venture Capitalists, etc.",
+                    organization: "Organizations and Enterprises",
+                    citizen: "Citizen with a Challenge/Issue/Demand",
+                  };
+                  return roleLabels[selected as string];
+                }}
+              >
+                <MenuItem value="startup-owner">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <RocketLaunchIcon sx={{ fontSize: "20px" }} />
+                    <Typography>Startup Owners/Developers</Typography>
+                  </Box>
+                </MenuItem>
+                <MenuItem value="investor">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <AccountBalanceIcon sx={{ fontSize: "20px" }} />
+                    <Typography>Investors, Sponsors, Venture Capitalists, etc.</Typography>
+                  </Box>
+                </MenuItem>
+                <MenuItem value="organization">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <BusinessIcon sx={{ fontSize: "20px" }} />
+                    <Typography>Organizations and Enterprises</Typography>
+                  </Box>
+                </MenuItem>
+                <MenuItem value="citizen">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <LightbulbIcon sx={{ fontSize: "20px" }} />
+                    <Typography>Citizen with a Challenge/Issue/Demand</Typography>
+                  </Box>
+                </MenuItem>
+              </GlassSelect>
             </Box>
 
             <Box sx={{ marginBottom: spacing.lg }}>
