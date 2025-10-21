@@ -5,7 +5,10 @@
       "Bash(if exist package-lock.json del package-lock.json)",
       "Bash(rm -rf node_modules package-lock.json)",
       "Bash(npm install)",
-      "Bash(timeout 10 npm run dev)"
+      "Bash(timeout 10 npm run dev)",
+      "Bash(dir \"A:\\civitech\\people-sqaure\\Client\\samples\")",
+      "Bash(npx tsc --noEmit)",
+      "Bash(npm run build)"
     ],
     "deny": [],
     "ask": []
