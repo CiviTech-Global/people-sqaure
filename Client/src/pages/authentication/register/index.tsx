@@ -46,6 +46,8 @@ const Register = () => {
   const handleRegister = () => {
     console.log("Register attempt:", formData);
     // Registration logic will be implemented later
+    // For now, navigate to home page after registration
+    navigate("/home");
   };
 
   const getRoleIcon = (role: string) => {

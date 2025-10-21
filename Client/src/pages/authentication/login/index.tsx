@@ -24,6 +24,8 @@ const Login = () => {
   const handleLogin = () => {
     console.log("Login attempt:", formData);
     // Login logic will be implemented later
+    // For now, navigate to home page after login
+    navigate("/home");
   };
 
   return (
