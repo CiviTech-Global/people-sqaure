@@ -1,4 +1,5 @@
 import { Box, Typography, Container } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
@@ -6,9 +7,12 @@ import { GradientBackground, GlassCard, GlassButton } from "../../../components"
 import { glassColors, shadows, spacing, responsivePadding } from "../../../themes";
 
 const WelcomePage = () => {
+  const navigate = useNavigate();
+
   const handleUserTypeClick = (userType: string) => {
     console.log(`Selected user type: ${userType}`);
-    // Navigation logic will be implemented later
+    // Navigate to login after selecting user type
+    navigate("/login");
   };
 
   return (
