@@ -103,19 +103,16 @@ export const GlassAppBar = ({ title, children }: GlassAppBarProps) => {
             </Typography>
           </TitleWrapper>
         )}
-        {children && (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              position: "relative",
-              zIndex: 1,
-            }}
-          >
-            {children}
-          </Box>
-        )}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            ml: "auto",
+          }}
+        >
+          {children}
+        </Box>
       </FuturisticToolbar>
     </StyledAppBar>
   );

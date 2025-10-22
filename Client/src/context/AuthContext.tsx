@@ -17,6 +17,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
+  updateUser: (user: User) => void;
   loading: boolean;
 }
 
@@ -54,12 +55,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     AuthService.clearAuthData();
   };
 
+  const updateUser = (updatedUser: User) => {
+    setUser(updatedUser);
+    AuthService.saveAuthData(token!, updatedUser);
+  };
+
   const value: AuthContextType = {
     user,
     token,
     isAuthenticated: !!token,
     login,
     logout,
+    updateUser,
     loading,
   };
 

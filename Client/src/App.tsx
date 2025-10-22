@@ -7,6 +7,7 @@ import ForgotPassword from "./presentation/pages/authentication/forgotPassword";
 import ForgotPasswordVerificationCode from "./presentation/pages/authentication/forgotPasswordVerificationCode";
 import SetNewPassword from "./presentation/pages/authentication/setNewPasswprd";
 import HomePage from "./presentation/pages/home";
+import Settings from "./presentation/pages/settings";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           />
           <Route path="/set-new-password" element={<SetNewPassword />} />
           <Route path="/home" element={<HomePage />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </Router>
     </AuthProvider>
