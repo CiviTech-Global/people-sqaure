@@ -1,7 +1,10 @@
+import "reflect-metadata";
 import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
+import userRoutes from "./presentation/routes/user.route";
+import { AppDataSource } from "./infrastructure/database/data-source";
 
 dotenv.config();
 
@@ -23,9 +26,16 @@ app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({ status: "OK" });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.use("/api/users", userRoutes);
+
+// Initialize database and start server
+AppDataSource.initialize()
+  .then(() => {
+    app.listen(PORT);
+  })
+  .catch((error) => {
+    console.error("Database connection failed:", error);
+    process.exit(1);
+  });
 
 export default app;

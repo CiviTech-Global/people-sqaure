@@ -9,7 +9,12 @@
       "Bash(dir \"A:\\civitech\\people-sqaure\\Client\\samples\")",
       "Bash(npx tsc --noEmit)",
       "Bash(npm run build)",
-      "Bash(dir /b \"A:\\civitech\\people-sqaure\\Client\\src\")"
+      "Bash(dir /b \"A:\\civitech\\people-sqaure\\Client\\src\")",
+      "Bash(dir /b \"A:\\civitech\\people-sqaure\\Server\")",
+      "Bash(cat:*)",
+      "Bash(dir:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
