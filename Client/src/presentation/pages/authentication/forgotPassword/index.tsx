@@ -1,18 +1,35 @@
 import { useState } from "react";
-import { Box, Typography, Container, Link } from "@mui/material";
+import { Box, Typography, Container, Link, Alert } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import EmailIcon from "@mui/icons-material/Email";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { GradientBackground, GlassCard, GlassButton, GlassTextField } from "../../../components";
 import { glassColors, shadows, spacing } from "../../../themes";
+import { AuthService } from "../../../../services/api/auth.service";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSendCode = () => {
-    console.log("Send verification code to:", email);
-    navigate("/forgot-password-verification");
+  const handleSendCode = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      if (!email) {
+        setError("Please enter your email");
+        return;
+      }
+
+      await AuthService.forgotPassword({ email });
+      navigate("/forgot-password-verification", { state: { email } });
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to send verification code. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -70,6 +87,12 @@ const ForgotPassword = () => {
             Enter your email address and we'll send you a verification code to reset your password
           </Typography>
 
+          {error && (
+            <Alert severity="error" sx={{ marginBottom: spacing.lg }}>
+              {error}
+            </Alert>
+          )}
+
           <Box sx={{ width: "100%" }}>
             <Box sx={{ marginBottom: spacing.xl }}>
               <GlassTextField
@@ -87,7 +110,9 @@ const ForgotPassword = () => {
             </Box>
 
             <Box sx={{ marginBottom: spacing.lg }}>
-              <GlassButton onClick={handleSendCode}>Send Verification Code</GlassButton>
+              <GlassButton onClick={handleSendCode} disabled={loading}>
+                {loading ? "Sending..." : "Send Verification Code"}
+              </GlassButton>
             </Box>
 
             <Typography

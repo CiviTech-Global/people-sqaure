@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Typography, Container, Link, InputAdornment } from "@mui/material";
+import { Box, Typography, Container, Link, InputAdornment, Alert } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import PersonIcon from "@mui/icons-material/Person";
 import EmailIcon from "@mui/icons-material/Email";
@@ -18,9 +18,12 @@ import {
   MenuItem,
 } from "../../../components";
 import { glassColors, shadows, spacing } from "../../../themes";
+import { AuthService } from "../../../../services/api/auth.service";
+import { useAuth } from "../../../../context/AuthContext";
 
 const Register = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -28,12 +31,15 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
       ...prev,
       [field]: e.target.value,
     }));
+    setError("");
   };
 
   const handleRoleChange = (e: any) => {
@@ -41,13 +47,45 @@ const Register = () => {
       ...prev,
       role: e.target.value,
     }));
+    setError("");
   };
 
-  const handleRegister = () => {
-    console.log("Register attempt:", formData);
-    // Registration logic will be implemented later
-    // For now, navigate to home page after registration
-    navigate("/home");
+  const handleRegister = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      if (!formData.fullName || !formData.email || !formData.role || !formData.password || !formData.confirmPassword) {
+        setError("Please fill in all fields");
+        return;
+      }
+
+      if (formData.password !== formData.confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
+
+      if (formData.password.length < 8) {
+        setError("Password must be at least 8 characters long");
+        return;
+      }
+
+      const response = await AuthService.register({
+        fullName: formData.fullName,
+        email: formData.email,
+        role: formData.role,
+        password: formData.password,
+      });
+
+      if (response.success) {
+        login(response.data.token, response.data.user);
+        navigate("/home");
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.response?.data?.errors?.join(", ") || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getRoleIcon = (role: string) => {
@@ -101,6 +139,12 @@ const Register = () => {
           >
             Create your account to get started
           </Typography>
+
+          {error && (
+            <Alert severity="error" sx={{ marginBottom: spacing.lg }}>
+              {error}
+            </Alert>
+          )}
 
           <Box sx={{ width: "100%" }}>
             <Box sx={{ marginBottom: spacing.lg }}>
@@ -223,7 +267,9 @@ const Register = () => {
             </Box>
 
             <Box sx={{ marginBottom: spacing.lg }}>
-              <GlassButton onClick={handleRegister}>Register</GlassButton>
+              <GlassButton onClick={handleRegister} disabled={loading}>
+                {loading ? "Registering..." : "Register"}
+              </GlassButton>
             </Box>
 
             <Typography

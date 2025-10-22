@@ -1,31 +1,56 @@
 import { useState } from "react";
-import { Box, Typography, Container, Link, Checkbox, FormControlLabel } from "@mui/material";
+import { Box, Typography, Container, Link, Checkbox, FormControlLabel, Alert } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
 import { GradientBackground, GlassCard, GlassButton, GlassTextField } from "../../../components";
 import { glassColors, shadows, spacing } from "../../../themes";
+import { AuthService } from "../../../../services/api/auth.service";
+import { useAuth } from "../../../../context/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     rememberMe: false,
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
       ...prev,
       [field]: field === "rememberMe" ? e.target.checked : e.target.value,
     }));
+    setError("");
   };
 
-  const handleLogin = () => {
-    console.log("Login attempt:", formData);
-    // Login logic will be implemented later
-    // For now, navigate to home page after login
-    navigate("/home");
+  const handleLogin = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      if (!formData.email || !formData.password) {
+        setError("Please fill in all fields");
+        return;
+      }
+
+      const response = await AuthService.login({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (response.success) {
+        login(response.data.token, response.data.user);
+        navigate("/home");
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -64,6 +89,12 @@ const Login = () => {
           >
             Welcome back! Please login to your account
           </Typography>
+
+          {error && (
+            <Alert severity="error" sx={{ marginBottom: spacing.lg }}>
+              {error}
+            </Alert>
+          )}
 
           <Box sx={{ width: "100%" }}>
             <Box sx={{ marginBottom: spacing.lg }}>
@@ -142,7 +173,9 @@ const Login = () => {
             </Box>
 
             <Box sx={{ marginBottom: spacing.lg }}>
-              <GlassButton onClick={handleLogin}>Login</GlassButton>
+              <GlassButton onClick={handleLogin} disabled={loading}>
+                {loading ? "Logging in..." : "Login"}
+              </GlassButton>
             </Box>
 
             <Typography

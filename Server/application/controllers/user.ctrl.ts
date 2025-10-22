@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { User } from "../../domain/user/user.entity";
 import { UserUtil } from "../../infrastructure/user.util";
 import { UserRepository } from "../../infrastructure/repositories/user.repository";
+import { JwtUtil } from "../../infrastructure/auth/jwt.util";
+import { AuthRequest } from "../../infrastructure/middleware/auth.middleware";
 
 export class UserController {
   private userRepository: UserRepository;
@@ -43,10 +45,19 @@ export class UserController {
         password: sanitizedData.password!,
       });
 
+      const token = JwtUtil.generateToken({
+        userId: newUser.id,
+        email: newUser.email,
+        role: newUser.role,
+      });
+
       res.status(201).json({
         success: true,
         message: "User registered successfully",
-        data: newUser.toJSON(),
+        data: {
+          user: newUser.toJSON(),
+          token,
+        },
       });
     } catch (error) {
       res.status(500).json({
@@ -79,10 +90,19 @@ export class UserController {
         return;
       }
 
+      const token = JwtUtil.generateToken({
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+      });
+
       res.status(200).json({
         success: true,
         message: "Login successful",
-        data: user.toJSON(),
+        data: {
+          user: user.toJSON(),
+          token,
+        },
       });
     } catch (error) {
       res.status(500).json({

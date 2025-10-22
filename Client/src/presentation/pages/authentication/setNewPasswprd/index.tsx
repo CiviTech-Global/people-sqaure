@@ -1,30 +1,63 @@
 import { useState } from "react";
-import { Box, Typography, Container } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Box, Typography, Container, Alert } from "@mui/material";
+import { useNavigate, useLocation } from "react-router-dom";
 import LockIcon from "@mui/icons-material/Lock";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { GradientBackground, GlassCard, GlassButton, GlassTextField } from "../../../components";
 import { glassColors, shadows, spacing } from "../../../themes";
+import { AuthService } from "../../../../services/api/auth.service";
 
 const SetNewPassword = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const email = location.state?.email || "";
+
   const [formData, setFormData] = useState({
     newPassword: "",
     confirmPassword: "",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
       ...prev,
       [field]: e.target.value,
     }));
+    setError("");
   };
 
-  const handleResetPassword = () => {
-    console.log("Reset password:", formData);
-    // Password reset logic will be implemented later
-    // After successful reset, navigate to login
-    navigate("/login");
+  const handleResetPassword = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      if (!formData.newPassword || !formData.confirmPassword) {
+        setError("Please fill in all fields");
+        return;
+      }
+
+      if (formData.newPassword !== formData.confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
+
+      if (formData.newPassword.length < 8) {
+        setError("Password must be at least 8 characters long");
+        return;
+      }
+
+      await AuthService.resetPassword({
+        email,
+        newPassword: formData.newPassword,
+      });
+
+      navigate("/login");
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to reset password. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -82,6 +115,12 @@ const SetNewPassword = () => {
             Your identity has been verified. Please set your new password
           </Typography>
 
+          {error && (
+            <Alert severity="error" sx={{ marginBottom: spacing.lg }}>
+              {error}
+            </Alert>
+          )}
+
           <Box sx={{ width: "100%" }}>
             <Box sx={{ marginBottom: spacing.lg }}>
               <GlassTextField
@@ -114,7 +153,9 @@ const SetNewPassword = () => {
             </Box>
 
             <Box>
-              <GlassButton onClick={handleResetPassword}>Reset Password</GlassButton>
+              <GlassButton onClick={handleResetPassword} disabled={loading}>
+                {loading ? "Resetting..." : "Reset Password"}
+              </GlassButton>
             </Box>
           </Box>
         </GlassCard>
