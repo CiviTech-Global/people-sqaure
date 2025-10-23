@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
 import { GradientBackground, GlassCard, GlassButton, GlassTextField } from "../../../components";
-import { glassColors, shadows, spacing } from "../../../themes";
+import { glassColors, spacing } from "../../../themes";
 import { AuthService } from "../../../../services/api/auth.service";
 import { useAuth } from "../../../../context/AuthContext";
 
@@ -71,8 +71,7 @@ const Login = () => {
               color: glassColors.textPrimary,
               fontWeight: 700,
               textAlign: "center",
-              marginBottom: spacing.sm,
-              textShadow: shadows.text,
+              marginBottom: spacing.xs,
               fontSize: { xs: "1.75rem", sm: "2rem", md: "2.25rem" },
             }}
           >
@@ -83,11 +82,11 @@ const Login = () => {
             sx={{
               color: glassColors.textSecondary,
               textAlign: "center",
-              marginBottom: spacing.xxxl,
+              marginBottom: spacing.xl,
               fontSize: { xs: "13px", sm: "14px" },
             }}
           >
-            Welcome back! Please login to your account
+            to your premium account
           </Typography>
 
           {error && (
@@ -106,7 +105,7 @@ const Login = () => {
                 onChange={handleInputChange("email")}
                 InputProps={{
                   startAdornment: (
-                    <EmailIcon sx={{ color: "rgba(255, 255, 255, 0.6)", marginRight: "10px" }} />
+                    <EmailIcon sx={{ color: glassColors.textSecondary, marginRight: "10px" }} />
                   ),
                 }}
               />
@@ -121,7 +120,7 @@ const Login = () => {
                 onChange={handleInputChange("password")}
                 InputProps={{
                   startAdornment: (
-                    <LockIcon sx={{ color: "rgba(255, 255, 255, 0.6)", marginRight: "10px" }} />
+                    <LockIcon sx={{ color: glassColors.textSecondary, marginRight: "10px" }} />
                   ),
                 }}
               />
@@ -143,9 +142,9 @@ const Login = () => {
                     checked={formData.rememberMe}
                     onChange={handleInputChange("rememberMe")}
                     sx={{
-                      color: "rgba(255, 255, 255, 0.6)",
+                      color: glassColors.textSecondary,
                       "&.Mui-checked": {
-                        color: glassColors.textPrimary,
+                        color: "#6EC77E",
                       },
                     }}
                   />

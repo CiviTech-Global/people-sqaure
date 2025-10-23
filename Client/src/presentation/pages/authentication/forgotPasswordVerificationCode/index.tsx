@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import KeyIcon from "@mui/icons-material/Key";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { GradientBackground, GlassCard, GlassButton, GlassTextField } from "../../../components";
-import { glassColors, shadows, spacing } from "../../../themes";
+import { glassColors, spacing } from "../../../themes";
 
 const ForgotPasswordVerificationCode = () => {
   const navigate = useNavigate();
@@ -55,7 +55,6 @@ const ForgotPasswordVerificationCode = () => {
               sx={{
                 color: glassColors.textPrimary,
                 fontWeight: 700,
-                textShadow: shadows.text,
                 fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
               }}
             >
@@ -85,7 +84,7 @@ const ForgotPasswordVerificationCode = () => {
                 onChange={(e) => setVerificationCode(e.target.value)}
                 InputProps={{
                   startAdornment: (
-                    <KeyIcon sx={{ color: "rgba(255, 255, 255, 0.6)", marginRight: "10px" }} />
+                    <KeyIcon sx={{ color: glassColors.textSecondary, marginRight: "10px" }} />
                   ),
                 }}
               />

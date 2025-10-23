@@ -5,7 +5,7 @@ import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import BusinessIcon from "@mui/icons-material/Business";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import { GradientBackground, GlassCard, GlassButton } from "../../../components";
-import { glassColors, shadows, spacing, responsivePadding } from "../../../themes";
+import { glassColors, spacing, responsivePadding } from "../../../themes";
 
 const WelcomePage = () => {
   const navigate = useNavigate();
@@ -34,24 +34,36 @@ const WelcomePage = () => {
               color: glassColors.textPrimary,
               fontWeight: 700,
               textAlign: "center",
-              marginBottom: spacing.md,
-              textShadow: shadows.text,
+              marginBottom: spacing.xs,
               fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" },
             }}
           >
-            Welcome
+            WELCOME
+          </Typography>
+          <Typography
+            variant="h5"
+            sx={{
+              color: glassColors.textPrimary,
+              textAlign: "center",
+              fontWeight: 600,
+              marginBottom: spacing.sm,
+              fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
+            }}
+          >
+            To Value Aims
           </Typography>
           <Typography
             variant="body1"
             sx={{
               color: glassColors.textSecondary,
               textAlign: "center",
-              marginBottom: spacing.xxxl,
-              fontSize: { xs: "14px", sm: "15px", md: "16px" },
-              lineHeight: 1.5,
+              marginBottom: spacing.xl,
+              fontSize: { xs: "13px", sm: "14px", md: "15px" },
+              lineHeight: 1.6,
+              px: { xs: 1, sm: 2 },
             }}
           >
-            Please select your role to continue
+            Value Aims is an organization that provides valuable aims to people, homes, organizations and anybody that needs it. Register to volunteer in this value parked movement.
           </Typography>
 
           <Box sx={{ width: "100%" }}>

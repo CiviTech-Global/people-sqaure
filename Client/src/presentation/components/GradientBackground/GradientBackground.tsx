@@ -19,7 +19,7 @@ const StyledGradientBackground = styled(Box)<{ gradient: string }>(({ gradient }
   alignItems: "center",
   justifyContent: "center",
   padding: "20px",
-  overflow: "hidden",
+  overflow: "auto",
   position: "relative",
   boxSizing: "border-box",
 }));

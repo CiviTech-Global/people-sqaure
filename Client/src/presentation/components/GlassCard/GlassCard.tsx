@@ -10,13 +10,13 @@ interface GlassCardProps {
 
 const StyledGlassCard = styled(Box)(({ theme }) => ({
   ...glassmorphismStyles.card,
-  borderRadius: borderRadius.large,
+  borderRadius: borderRadius.xlarge,
   padding: responsivePadding.card.md,
   boxSizing: "border-box",
   width: "100%",
   [theme.breakpoints.down("sm")]: {
     padding: responsivePadding.card.sm,
-    borderRadius: borderRadius.medium,
+    borderRadius: borderRadius.large,
   },
   [theme.breakpoints.down(400)]: {
     padding: responsivePadding.card.xs,

@@ -7,8 +7,8 @@ type GlassTextFieldProps = Omit<TextFieldProps, "variant">;
 
 const StyledGlassTextField = styled(TextField)({
   "& .MuiOutlinedInput-root": {
-    ...glassmorphismStyles.button,
-    borderRadius: borderRadius.small,
+    ...glassmorphismStyles.input,
+    borderRadius: borderRadius.medium,
     color: glassColors.textPrimary,
     fontSize: "15px",
     transition: transitions.default,
@@ -16,30 +16,29 @@ const StyledGlassTextField = styled(TextField)({
       padding: "14px 16px",
       color: glassColors.textPrimary,
       "&::placeholder": {
-        color: "rgba(255, 255, 255, 0.6)",
-        opacity: 1,
+        color: glassColors.textSecondary,
+        opacity: 0.7,
       },
     },
     "&:hover": {
-      background: "rgba(255, 255, 255, 0.2)",
+      borderColor: "rgba(110, 199, 126, 0.3)",
     },
     "&.Mui-focused": {
-      background: "rgba(255, 255, 255, 0.2)",
-      border: "1px solid rgba(255, 255, 255, 0.4)",
+      ...glassmorphismStyles.inputFocused,
     },
     "& fieldset": {
       border: "none",
     },
   },
   "& .MuiInputLabel-root": {
-    color: "rgba(255, 255, 255, 0.8)",
+    color: glassColors.textSecondary,
     fontSize: "15px",
     "&.Mui-focused": {
       color: glassColors.textPrimary,
     },
   },
   "& .MuiFormHelperText-root": {
-    color: "rgba(255, 255, 255, 0.8)",
+    color: glassColors.textSecondary,
     marginLeft: "4px",
   },
 });

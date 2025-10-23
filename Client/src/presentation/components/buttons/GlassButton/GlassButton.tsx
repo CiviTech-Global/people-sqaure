@@ -17,24 +17,29 @@ interface GlassButtonProps extends Omit<ButtonProps, "variant"> {
 
 const StyledGlassButton = styled(Button)(({ theme }) => ({
   ...glassmorphismStyles.button,
-  borderRadius: borderRadius.small,
+  borderRadius: borderRadius.button,
   padding: responsivePadding.button.md,
-  color: glassColors.textPrimary,
-  fontSize: "15px",
-  fontWeight: 500,
+  color: glassColors.textButton,
+  fontSize: "16px",
+  fontWeight: 600,
   textTransform: "none",
   transition: transitions.default,
   display: "flex",
   alignItems: "center",
-  justifyContent: "flex-start",
+  justifyContent: "center",
   gap: "12px",
   boxSizing: "border-box",
   whiteSpace: "normal",
-  textAlign: "left",
+  textAlign: "center",
   lineHeight: 1.4,
+  minHeight: "48px",
   "&:hover": {
     ...glassmorphismStyles.buttonHover,
     transform: "translateY(-2px)",
+  },
+  "&:disabled": {
+    opacity: 0.6,
+    cursor: "not-allowed",
   },
   "& .MuiButton-startIcon": {
     margin: 0,
@@ -42,13 +47,15 @@ const StyledGlassButton = styled(Button)(({ theme }) => ({
   },
   [theme.breakpoints.down("sm")]: {
     padding: responsivePadding.button.sm,
-    fontSize: "14px",
+    fontSize: "15px",
     gap: "10px",
+    minHeight: "44px",
   },
   [theme.breakpoints.down(400)]: {
     padding: responsivePadding.button.xs,
-    fontSize: "13px",
+    fontSize: "14px",
     gap: "8px",
+    minHeight: "40px",
   },
 }));
 

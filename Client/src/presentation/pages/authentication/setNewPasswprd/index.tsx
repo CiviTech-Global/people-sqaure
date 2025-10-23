@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import LockIcon from "@mui/icons-material/Lock";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { GradientBackground, GlassCard, GlassButton, GlassTextField } from "../../../components";
-import { glassColors, shadows, spacing } from "../../../themes";
+import { glassColors, spacing } from "../../../themes";
 import { AuthService } from "../../../../services/api/auth.service";
 
 const SetNewPassword = () => {
@@ -94,7 +94,6 @@ const SetNewPassword = () => {
                 color: glassColors.textPrimary,
                 fontWeight: 700,
                 textAlign: "center",
-                textShadow: shadows.text,
                 fontSize: { xs: "1.75rem", sm: "2rem", md: "2.25rem" },
               }}
             >
@@ -131,7 +130,7 @@ const SetNewPassword = () => {
                 onChange={handleInputChange("newPassword")}
                 InputProps={{
                   startAdornment: (
-                    <LockIcon sx={{ color: "rgba(255, 255, 255, 0.6)", marginRight: "10px" }} />
+                    <LockIcon sx={{ color: glassColors.textSecondary, marginRight: "10px" }} />
                   ),
                 }}
               />
@@ -146,7 +145,7 @@ const SetNewPassword = () => {
                 onChange={handleInputChange("confirmPassword")}
                 InputProps={{
                   startAdornment: (
-                    <LockIcon sx={{ color: "rgba(255, 255, 255, 0.6)", marginRight: "10px" }} />
+                    <LockIcon sx={{ color: glassColors.textSecondary, marginRight: "10px" }} />
                   ),
                 }}
               />

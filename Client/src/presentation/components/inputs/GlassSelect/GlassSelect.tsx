@@ -6,8 +6,8 @@ import { glassmorphismStyles, borderRadius, glassColors, transitions } from "../
 type GlassSelectProps = Omit<SelectProps, "variant">;
 
 const StyledGlassSelect = styled(Select)({
-  ...glassmorphismStyles.button,
-  borderRadius: borderRadius.small,
+  ...glassmorphismStyles.input,
+  borderRadius: borderRadius.medium,
   color: glassColors.textPrimary,
   fontSize: "15px",
   transition: transitions.default,
@@ -19,14 +19,13 @@ const StyledGlassSelect = styled(Select)({
     gap: "10px",
   },
   "& .MuiSelect-icon": {
-    color: "rgba(255, 255, 255, 0.8)",
+    color: glassColors.textSecondary,
   },
   "&:hover": {
-    background: "rgba(255, 255, 255, 0.2)",
+    borderColor: "rgba(110, 199, 126, 0.3)",
   },
   "&.Mui-focused": {
-    background: "rgba(255, 255, 255, 0.2)",
-    border: "1px solid rgba(255, 255, 255, 0.4)",
+    ...glassmorphismStyles.inputFocused,
   },
   "& fieldset": {
     border: "none",
@@ -44,7 +43,7 @@ export const GlassSelect = (props: GlassSelectProps) => {
         PaperProps: {
           sx: {
             ...glassmorphismStyles.card,
-            borderRadius: borderRadius.small,
+            borderRadius: borderRadius.medium,
             marginTop: "8px",
             maxHeight: "300px",
             "& .MuiMenuItem-root": {
@@ -53,12 +52,12 @@ export const GlassSelect = (props: GlassSelectProps) => {
               padding: "12px 16px",
               transition: transitions.default,
               "&:hover": {
-                background: "rgba(255, 255, 255, 0.15)",
+                background: "rgba(110, 199, 126, 0.1)",
               },
               "&.Mui-selected": {
-                background: "rgba(255, 255, 255, 0.2)",
+                background: "rgba(110, 199, 126, 0.15)",
                 "&:hover": {
-                  background: "rgba(255, 255, 255, 0.25)",
+                  background: "rgba(110, 199, 126, 0.2)",
                 },
               },
             },

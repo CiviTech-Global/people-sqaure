@@ -3,27 +3,35 @@ import { glassColors, shadows } from "./colors";
 export const glassmorphismStyles = {
   card: {
     background: glassColors.cardBackground,
-    backdropFilter: "blur(10px)",
-    WebkitBackdropFilter: "blur(10px)",
     border: `1px solid ${glassColors.cardBorder}`,
-    boxShadow: shadows.glass,
+    boxShadow: shadows.card,
   },
   button: {
     background: glassColors.buttonBackground,
-    backdropFilter: "blur(5px)",
-    WebkitBackdropFilter: "blur(5px)",
-    border: `1px solid ${glassColors.buttonBorder}`,
+    border: "none",
+    boxShadow: shadows.button,
   },
   buttonHover: {
     background: glassColors.buttonBackgroundHover,
-    boxShadow: shadows.glassHover,
+    boxShadow: shadows.buttonHover,
+  },
+  input: {
+    background: "rgba(255, 255, 255, 0.8)",
+    border: "1px solid rgba(110, 199, 126, 0.2)",
+    boxShadow: shadows.input,
+  },
+  inputFocused: {
+    border: "1px solid rgba(110, 199, 126, 0.5)",
+    boxShadow: "0 4px 12px rgba(110, 199, 126, 0.2)",
   },
 } as const;
 
 export const borderRadius = {
-  small: "12px",
-  medium: "16px",
-  large: "20px",
+  small: "8px",
+  medium: "12px",
+  large: "16px",
+  xlarge: "24px",
+  button: "50px",
 } as const;
 
 export const transitions = {

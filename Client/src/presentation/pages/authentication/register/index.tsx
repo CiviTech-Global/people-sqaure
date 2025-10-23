@@ -9,6 +9,7 @@ import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import BusinessIcon from "@mui/icons-material/Business";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
+import PhoneIcon from "@mui/icons-material/Phone";
 import {
   GradientBackground,
   GlassCard,
@@ -17,7 +18,7 @@ import {
   GlassSelect,
   MenuItem,
 } from "../../../components";
-import { glassColors, shadows, spacing } from "../../../themes";
+import { glassColors, spacing } from "../../../themes";
 import { AuthService } from "../../../../services/api/auth.service";
 import { useAuth } from "../../../../context/AuthContext";
 
@@ -121,23 +122,22 @@ const Register = () => {
               color: glassColors.textPrimary,
               fontWeight: 700,
               textAlign: "center",
-              marginBottom: spacing.sm,
-              textShadow: shadows.text,
+              marginBottom: spacing.xs,
               fontSize: { xs: "1.75rem", sm: "2rem", md: "2.25rem" },
             }}
           >
-            Register
+            Create account
           </Typography>
           <Typography
             variant="body2"
             sx={{
               color: glassColors.textSecondary,
               textAlign: "center",
-              marginBottom: spacing.xxxl,
+              marginBottom: spacing.xl,
               fontSize: { xs: "13px", sm: "14px" },
             }}
           >
-            Create your account to get started
+            Fill up the form to get onboard as one of our volunteers at Value Aims
           </Typography>
 
           {error && (
@@ -156,7 +156,7 @@ const Register = () => {
                 onChange={handleInputChange("fullName")}
                 InputProps={{
                   startAdornment: (
-                    <PersonIcon sx={{ color: "rgba(255, 255, 255, 0.6)", marginRight: "10px" }} />
+                    <PersonIcon sx={{ color: glassColors.textSecondary, marginRight: "10px" }} />
                   ),
                 }}
               />
@@ -171,7 +171,7 @@ const Register = () => {
                 onChange={handleInputChange("email")}
                 InputProps={{
                   startAdornment: (
-                    <EmailIcon sx={{ color: "rgba(255, 255, 255, 0.6)", marginRight: "10px" }} />
+                    <EmailIcon sx={{ color: glassColors.textSecondary, marginRight: "10px" }} />
                   ),
                 }}
               />
@@ -188,14 +188,14 @@ const Register = () => {
                     {formData.role ? (
                       getRoleIcon(formData.role)
                     ) : (
-                      <WorkIcon sx={{ color: "rgba(255, 255, 255, 0.6)" }} />
+                      <WorkIcon sx={{ color: glassColors.textSecondary }} />
                     )}
                   </InputAdornment>
                 }
                 renderValue={(selected) => {
                   if (!selected) {
                     return (
-                      <Typography sx={{ color: "rgba(255, 255, 255, 0.6)" }}>
+                      <Typography sx={{ color: glassColors.textSecondary }}>
                         Select Your Role
                       </Typography>
                     );
@@ -245,7 +245,7 @@ const Register = () => {
                 onChange={handleInputChange("password")}
                 InputProps={{
                   startAdornment: (
-                    <LockIcon sx={{ color: "rgba(255, 255, 255, 0.6)", marginRight: "10px" }} />
+                    <LockIcon sx={{ color: glassColors.textSecondary, marginRight: "10px" }} />
                   ),
                 }}
               />
@@ -260,7 +260,7 @@ const Register = () => {
                 onChange={handleInputChange("confirmPassword")}
                 InputProps={{
                   startAdornment: (
-                    <LockIcon sx={{ color: "rgba(255, 255, 255, 0.6)", marginRight: "10px" }} />
+                    <LockIcon sx={{ color: glassColors.textSecondary, marginRight: "10px" }} />
                   ),
                 }}
               />

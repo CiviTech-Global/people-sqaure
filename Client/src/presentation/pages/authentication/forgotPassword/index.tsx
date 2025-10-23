@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import EmailIcon from "@mui/icons-material/Email";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { GradientBackground, GlassCard, GlassButton, GlassTextField } from "../../../components";
-import { glassColors, shadows, spacing } from "../../../themes";
+import { glassColors, spacing } from "../../../themes";
 import { AuthService } from "../../../../services/api/auth.service";
 
 const ForgotPassword = () => {
@@ -67,7 +67,6 @@ const ForgotPassword = () => {
               sx={{
                 color: glassColors.textPrimary,
                 fontWeight: 700,
-                textShadow: shadows.text,
                 fontSize: { xs: "1.75rem", sm: "2rem", md: "2.25rem" },
               }}
             >
@@ -103,7 +102,7 @@ const ForgotPassword = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 InputProps={{
                   startAdornment: (
-                    <EmailIcon sx={{ color: "rgba(255, 255, 255, 0.6)", marginRight: "10px" }} />
+                    <EmailIcon sx={{ color: glassColors.textSecondary, marginRight: "10px" }} />
                   ),
                 }}
               />
