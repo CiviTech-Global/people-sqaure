@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute, PublicRoute } from "./presentation/components";
 import WelcomePage from "./presentation/pages/authentication/welcomePage";
@@ -9,6 +14,7 @@ import ForgotPasswordVerificationCode from "./presentation/pages/authentication/
 import SetNewPassword from "./presentation/pages/authentication/setNewPasswprd";
 import HomePage from "./presentation/pages/home";
 import Settings from "./presentation/pages/settings";
+import MyProjects from "./presentation/pages/myProjects";
 
 function App() {
   return (
@@ -68,6 +74,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <HomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-projects"
+            element={
+              <ProtectedRoute>
+                <MyProjects />
               </ProtectedRoute>
             }
           />
