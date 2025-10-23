@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { User } from "../../domain/user/user.entity";
-import { UserUtil } from "../../infrastructure/user.util";
+import { UserUtil } from "../../infrastructure/utils/user.util";
 import { UserRepository } from "../../infrastructure/repositories/user.repository";
 import { JwtUtil } from "../../infrastructure/auth/jwt.util";
 import { AuthRequest } from "../../infrastructure/middleware/auth.middleware";
@@ -16,7 +16,12 @@ export class UserController {
     try {
       const { fullName, email, role, password } = req.body;
 
-      const sanitizedData = UserUtil.sanitizeUserData({ fullName, email, role, password });
+      const sanitizedData = UserUtil.sanitizeUserData({
+        fullName,
+        email,
+        role,
+        password,
+      });
       const validation = UserUtil.validateUserData(sanitizedData);
 
       if (!validation.isValid) {
@@ -28,7 +33,9 @@ export class UserController {
         return;
       }
 
-      const existingUser = await this.userRepository.findByEmail(sanitizedData.email!);
+      const existingUser = await this.userRepository.findByEmail(
+        sanitizedData.email!
+      );
 
       if (existingUser) {
         res.status(409).json({
@@ -80,7 +87,9 @@ export class UserController {
         return;
       }
 
-      const user = await this.userRepository.findByEmail(email.trim().toLowerCase());
+      const user = await this.userRepository.findByEmail(
+        email.trim().toLowerCase()
+      );
 
       if (!user || !(await user.comparePassword(password))) {
         res.status(401).json({
@@ -113,7 +122,10 @@ export class UserController {
     }
   };
 
-  public forgotPassword = async (req: Request, res: Response): Promise<void> => {
+  public forgotPassword = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
     try {
       const { email } = req.body;
 
@@ -125,7 +137,9 @@ export class UserController {
         return;
       }
 
-      const user = await this.userRepository.findByEmail(email.trim().toLowerCase());
+      const user = await this.userRepository.findByEmail(
+        email.trim().toLowerCase()
+      );
 
       if (!user) {
         res.status(200).json({
@@ -135,7 +149,9 @@ export class UserController {
         return;
       }
 
-      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const verificationCode = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
 
       res.status(200).json({
         success: true,
@@ -172,7 +188,9 @@ export class UserController {
         return;
       }
 
-      const user = await this.userRepository.findByEmail(email.trim().toLowerCase());
+      const user = await this.userRepository.findByEmail(
+        email.trim().toLowerCase()
+      );
 
       if (!user) {
         res.status(404).json({
@@ -239,7 +257,11 @@ export class UserController {
         return;
       }
 
-      const sanitizedData = UserUtil.sanitizeUserData({ fullName, email, role });
+      const sanitizedData = UserUtil.sanitizeUserData({
+        fullName,
+        email,
+        role,
+      });
       const validation = UserUtil.validateUserData(sanitizedData);
 
       if (!validation.isValid) {

@@ -1,4 +1,4 @@
-import { User, UserRole } from "../domain/user/user.entity";
+import { User, UserRole } from "../../domain/user/user.entity";
 
 export class UserUtil {
   public static validateEmail(email: string): boolean {
@@ -6,28 +6,51 @@ export class UserUtil {
     return emailRegex.test(email);
   }
 
-  public static validatePassword(password: string): { isValid: boolean; message?: string } {
+  public static validatePassword(password: string): {
+    isValid: boolean;
+    message?: string;
+  } {
     if (password.length < 8) {
-      return { isValid: false, message: "Password must be at least 8 characters long" };
+      return {
+        isValid: false,
+        message: "Password must be at least 8 characters long",
+      };
     }
     if (!/[A-Z]/.test(password)) {
-      return { isValid: false, message: "Password must contain at least one uppercase letter" };
+      return {
+        isValid: false,
+        message: "Password must contain at least one uppercase letter",
+      };
     }
     if (!/[a-z]/.test(password)) {
-      return { isValid: false, message: "Password must contain at least one lowercase letter" };
+      return {
+        isValid: false,
+        message: "Password must contain at least one lowercase letter",
+      };
     }
     if (!/[0-9]/.test(password)) {
-      return { isValid: false, message: "Password must contain at least one number" };
+      return {
+        isValid: false,
+        message: "Password must contain at least one number",
+      };
     }
     return { isValid: true };
   }
 
   public static validateRole(role: string): role is UserRole {
-    const validRoles: UserRole[] = ["startup-owner", "investor", "organization", "citizen"];
+    const validRoles: UserRole[] = [
+      "startup-owner",
+      "investor",
+      "organization",
+      "citizen",
+    ];
     return validRoles.includes(role as UserRole);
   }
 
-  public static validateUserData(data: Partial<User>): { isValid: boolean; errors: string[] } {
+  public static validateUserData(data: Partial<User>): {
+    isValid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
     if (!data.fullName || data.fullName.trim().length === 0) {

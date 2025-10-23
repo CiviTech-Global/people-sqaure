@@ -4,6 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
 import userRoutes from "./presentation/routes/user.route";
+import projectRoutes from "./presentation/routes/project.route";
 import { AppDataSource } from "./infrastructure/database/data-source";
 
 dotenv.config();
@@ -27,6 +28,7 @@ app.get("/health", (req: Request, res: Response) => {
 });
 
 app.use("/api/users", userRoutes);
+app.use("/api/projects", projectRoutes);
 
 // Initialize database and start server
 AppDataSource.initialize()
