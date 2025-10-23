@@ -3,3 +3,5 @@ export { GlassButton } from "./buttons";
 export { GradientBackground } from "./GradientBackground";
 export { GlassTextField, GlassSelect, MenuItem } from "./inputs";
 export { GlassAppBar } from "./layout";
+export { ProtectedRoute } from "./routing/ProtectedRoute";
+export { PublicRoute } from "./routing/PublicRoute";

@@ -50,7 +50,7 @@ const WelcomePage = () => {
               fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
             }}
           >
-            To Value Aims
+            To People Square
           </Typography>
           <Typography
             variant="body1"
@@ -63,7 +63,7 @@ const WelcomePage = () => {
               px: { xs: 1, sm: 2 },
             }}
           >
-            Value Aims is an organization that provides valuable aims to people, homes, organizations and anybody that needs it. Register to volunteer in this value parked movement.
+            People Square is a platform that connects people, homes, organizations and communities to create positive impact together. Join us in building a better future.
           </Typography>
 
           <Box sx={{ width: "100%" }}>

@@ -1,5 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { ProtectedRoute, PublicRoute } from "./presentation/components";
 import WelcomePage from "./presentation/pages/authentication/welcomePage";
 import Login from "./presentation/pages/authentication/login";
 import Register from "./presentation/pages/authentication/register";
@@ -14,17 +15,71 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<WelcomePage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <WelcomePage />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              <PublicRoute>
+                <ForgotPassword />
+              </PublicRoute>
+            }
+          />
           <Route
             path="/forgot-password-verification"
-            element={<ForgotPasswordVerificationCode />}
+            element={
+              <PublicRoute>
+                <ForgotPasswordVerificationCode />
+              </PublicRoute>
+            }
           />
-          <Route path="/set-new-password" element={<SetNewPassword />} />
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route
+            path="/set-new-password"
+            element={
+              <PublicRoute>
+                <SetNewPassword />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </AuthProvider>

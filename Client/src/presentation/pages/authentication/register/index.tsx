@@ -137,7 +137,7 @@ const Register = () => {
               fontSize: { xs: "13px", sm: "14px" },
             }}
           >
-            Fill up the form to get onboard as one of our volunteers at Value Aims
+            Fill up the form to join the People Square community
           </Typography>
 
           {error && (

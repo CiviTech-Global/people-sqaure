@@ -1,6 +1,6 @@
 import { AppBar, Toolbar, Typography, Box } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { glassColors } from "../../../themes";
+import { colors } from "../../../themes";
 
 interface GlassAppBarProps {
   title?: string;
@@ -8,112 +8,59 @@ interface GlassAppBarProps {
 }
 
 const StyledAppBar = styled(AppBar)({
-  background: "linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 50%, rgba(240, 147, 251, 0.9) 100%)",
-  backdropFilter: "blur(30px) saturate(180%)",
-  WebkitBackdropFilter: "blur(30px) saturate(180%)",
-  boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.4), 0 2px 8px 0 rgba(0, 0, 0, 0.1), inset 0 1px 0 0 rgba(255, 255, 255, 0.2)",
-  borderBottom: "1px solid rgba(255, 255, 255, 0.18)",
+  background: "rgba(255, 255, 255, 0.98)",
+  backdropFilter: "blur(20px)",
+  WebkitBackdropFilter: "blur(20px)",
+  boxShadow: "0 2px 20px rgba(110, 199, 126, 0.15)",
+  borderBottom: "1px solid rgba(110, 199, 126, 0.15)",
   position: "sticky",
   top: 0,
   zIndex: 1100,
-  "&::before": {
-    content: '""',
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: "1px",
-    background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent)",
-  },
-  "&::after": {
-    content: '""',
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: "2px",
-    background: "linear-gradient(90deg, rgba(102, 126, 234, 0.5), rgba(240, 147, 251, 0.5), rgba(102, 126, 234, 0.5))",
-    filter: "blur(1px)",
-  },
 });
 
-const FuturisticToolbar = styled(Toolbar)({
-  minHeight: "72px",
+const StyledToolbar = styled(Toolbar)({
+  minHeight: "68px",
   position: "relative",
   paddingLeft: "24px",
   paddingRight: "24px",
   "@media (max-width: 600px)": {
-    minHeight: "64px",
+    minHeight: "60px",
     paddingLeft: "16px",
     paddingRight: "16px",
-  },
-});
-
-const TitleWrapper = styled(Box)({
-  position: "relative",
-  display: "inline-flex",
-  alignItems: "center",
-  "&::before": {
-    content: '""',
-    position: "absolute",
-    left: "-12px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    width: "4px",
-    height: "24px",
-    background: "linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.3))",
-    borderRadius: "2px",
-    boxShadow: "0 0 8px rgba(255, 255, 255, 0.6)",
   },
 });
 
 export const GlassAppBar = ({ title, children }: GlassAppBarProps) => {
   return (
     <StyledAppBar elevation={0}>
-      <FuturisticToolbar>
+      <StyledToolbar>
         {title && (
-          <TitleWrapper sx={{ flexGrow: 1 }}>
+          <Box sx={{ flexGrow: 1 }}>
             <Typography
               variant="h6"
               component="div"
               sx={{
-                color: glassColors.textPrimary,
+                color: colors.text.primary,
                 fontWeight: 700,
                 fontSize: { xs: "1.15rem", sm: "1.35rem", md: "1.5rem" },
-                textShadow: "2px 2px 8px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 255, 255, 0.3)",
-                letterSpacing: "0.5px",
-                background: "linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.9) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-                position: "relative",
-                "&::after": {
-                  content: '""',
-                  position: "absolute",
-                  bottom: "-4px",
-                  left: 0,
-                  width: "60px",
-                  height: "2px",
-                  background: "linear-gradient(90deg, rgba(255, 255, 255, 0.8), transparent)",
-                  borderRadius: "2px",
-                },
+                letterSpacing: "0.3px",
               }}
             >
               {title}
             </Typography>
-          </TitleWrapper>
+          </Box>
         )}
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: 2,
+            gap: 1.5,
             ml: "auto",
           }}
         >
           {children}
         </Box>
-      </FuturisticToolbar>
+      </StyledToolbar>
     </StyledAppBar>
   );
 };

@@ -24,6 +24,7 @@ import { GlassCard } from "../../../components/GlassCard/GlassCard";
 import { GlassTextField } from "../../../components/inputs/GlassTextField/GlassTextField";
 import { GlassButton } from "../../../components/buttons/GlassButton/GlassButton";
 import { UserService } from "../../../../services/api/user.service";
+import { colors } from "../../../themes";
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
@@ -86,15 +87,15 @@ const Profile = () => {
   const getRoleColor = (role: string) => {
     switch (role) {
       case "startup-owner":
-        return "#667eea";
+        return colors.primary.main;
       case "investor":
-        return "#f093fb";
+        return colors.primary.light;
       case "organization":
-        return "#764ba2";
+        return colors.primary.dark;
       case "citizen":
-        return "#48c6ef";
+        return colors.accent.green;
       default:
-        return "#667eea";
+        return colors.primary.main;
     }
   };
 
@@ -116,7 +117,7 @@ const Profile = () => {
   if (!user) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-        <Typography sx={{ color: "rgba(255, 255, 255, 0.7)" }}>
+        <Typography sx={{ color: colors.text.secondary }}>
           Loading profile...
         </Typography>
       </Box>
@@ -129,7 +130,7 @@ const Profile = () => {
         <Alert
           severity="error"
           onClose={() => setError(null)}
-          sx={{ mb: 2, backgroundColor: "rgba(211, 47, 47, 0.2)", color: "#fff" }}
+          sx={{ mb: 2 }}
         >
           {error}
         </Alert>
@@ -138,7 +139,7 @@ const Profile = () => {
         <Alert
           severity="success"
           onClose={() => setSuccess(null)}
-          sx={{ mb: 2, backgroundColor: "rgba(46, 125, 50, 0.2)", color: "#fff" }}
+          sx={{ mb: 2 }}
         >
           {success}
         </Alert>
@@ -158,11 +159,11 @@ const Profile = () => {
               sx={{
                 width: 100,
                 height: 100,
-                background:
-                  "linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%)",
+                background: "linear-gradient(135deg, #6EC77E 0%, #A8D99C 100%)",
                 fontSize: "2.5rem",
                 fontWeight: 700,
-                boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.4)",
+                color: colors.text.light,
+                boxShadow: "0 4px 20px rgba(110, 199, 126, 0.3)",
               }}
             >
               {user.fullName.charAt(0).toUpperCase()}
@@ -171,10 +172,9 @@ const Profile = () => {
               <Typography
                 variant="h4"
                 sx={{
-                  color: "#ffffff",
+                  color: colors.text.primary,
                   fontWeight: 700,
                   mb: 1,
-                  textShadow: "2px 2px 8px rgba(0, 0, 0, 0.3)",
                 }}
               >
                 {user.fullName}
@@ -195,10 +195,10 @@ const Profile = () => {
             <IconButton
               onClick={handleEdit}
               sx={{
-                color: "#ffffff",
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                color: colors.text.primary,
+                backgroundColor: "rgba(110, 199, 126, 0.1)",
                 "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  backgroundColor: "rgba(110, 199, 126, 0.2)",
                 },
               }}
             >
@@ -209,7 +209,7 @@ const Profile = () => {
 
         <Divider
           sx={{
-            borderColor: "rgba(255, 255, 255, 0.2)",
+            borderColor: "rgba(110, 199, 126, 0.2)",
             mb: 4,
           }}
         />
@@ -219,7 +219,7 @@ const Profile = () => {
           <Typography
             variant="h6"
             sx={{
-              color: "#ffffff",
+              color: colors.text.primary,
               fontWeight: 600,
               mb: 3,
               display: "flex",
@@ -240,7 +240,7 @@ const Profile = () => {
             <Box>
               <Typography
                 sx={{
-                  color: "rgba(255, 255, 255, 0.7)",
+                  color: colors.text.secondary,
                   fontSize: "0.875rem",
                   mb: 1,
                   display: "flex",
@@ -260,7 +260,7 @@ const Profile = () => {
               ) : (
                 <Typography
                   sx={{
-                    color: "#ffffff",
+                    color: colors.text.primary,
                     fontSize: "1rem",
                     fontWeight: 500,
                   }}
@@ -273,7 +273,7 @@ const Profile = () => {
             <Box>
               <Typography
                 sx={{
-                  color: "rgba(255, 255, 255, 0.7)",
+                  color: colors.text.secondary,
                   fontSize: "0.875rem",
                   mb: 1,
                   display: "flex",
@@ -285,7 +285,7 @@ const Profile = () => {
               </Typography>
               <Typography
                 sx={{
-                  color: "#ffffff",
+                  color: colors.text.primary,
                   fontSize: "1rem",
                   fontWeight: 500,
                 }}
@@ -297,7 +297,7 @@ const Profile = () => {
             <Box>
               <Typography
                 sx={{
-                  color: "rgba(255, 255, 255, 0.7)",
+                  color: colors.text.secondary,
                   fontSize: "0.875rem",
                   mb: 1,
                   display: "flex",
@@ -309,7 +309,7 @@ const Profile = () => {
               </Typography>
               <Typography
                 sx={{
-                  color: "#ffffff",
+                  color: colors.text.primary,
                   fontSize: "1rem",
                   fontWeight: 500,
                 }}
@@ -321,7 +321,7 @@ const Profile = () => {
             <Box>
               <Typography
                 sx={{
-                  color: "rgba(255, 255, 255, 0.7)",
+                  color: colors.text.secondary,
                   fontSize: "0.875rem",
                   mb: 1,
                   display: "flex",
@@ -333,7 +333,7 @@ const Profile = () => {
               </Typography>
               <Typography
                 sx={{
-                  color: "#ffffff",
+                  color: colors.text.primary,
                   fontSize: "1rem",
                   fontWeight: 500,
                 }}
@@ -345,7 +345,7 @@ const Profile = () => {
             <Box>
               <Typography
                 sx={{
-                  color: "rgba(255, 255, 255, 0.7)",
+                  color: colors.text.secondary,
                   fontSize: "0.875rem",
                   mb: 1,
                   display: "flex",
@@ -357,7 +357,7 @@ const Profile = () => {
               </Typography>
               <Typography
                 sx={{
-                  color: "#ffffff",
+                  color: colors.text.primary,
                   fontSize: "1rem",
                   fontWeight: 500,
                 }}
@@ -373,7 +373,7 @@ const Profile = () => {
           <>
             <Divider
               sx={{
-                borderColor: "rgba(255, 255, 255, 0.2)",
+                borderColor: "rgba(110, 199, 126, 0.2)",
                 my: 4,
               }}
             />
@@ -383,7 +383,13 @@ const Profile = () => {
                 icon={<CancelIcon />}
                 fullWidth={false}
                 disabled={loading}
-                sx={{ minWidth: 120 }}
+                sx={{
+                  minWidth: 120,
+                  background: "rgba(110, 199, 126, 0.2)",
+                  "&:hover": {
+                    background: "rgba(110, 199, 126, 0.3)",
+                  },
+                }}
               >
                 Cancel
               </GlassButton>
@@ -392,15 +398,7 @@ const Profile = () => {
                 icon={loading ? <CircularProgress size={20} sx={{ color: "#fff" }} /> : <SaveIcon />}
                 fullWidth={false}
                 disabled={loading}
-                sx={{
-                  minWidth: 120,
-                  background:
-                    "linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%)",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(135deg, rgba(102, 126, 234, 0.4) 0%, rgba(118, 75, 162, 0.4) 100%)",
-                  },
-                }}
+                sx={{ minWidth: 120 }}
               >
                 {loading ? "Saving..." : "Save"}
               </GlassButton>
