@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { ProjectController } from "../../application/controllers/project.ctrl";
 import { AuthMiddleware } from "../../infrastructure/middleware/auth.middleware";
+import { upload } from "../../infrastructure/utils/fileUpload.util";
 
 const router = Router();
 const projectController = new ProjectController();
@@ -15,6 +16,20 @@ router.get(
   AuthMiddleware.authenticate,
   projectController.getProjectsByInvestmentStatus
 );
+
+// File upload routes
+router.post(
+  "/upload",
+  AuthMiddleware.authenticate,
+  upload.single("file"),
+  projectController.uploadFile
+);
+router.delete(
+  "/upload/:filename",
+  AuthMiddleware.authenticate,
+  projectController.deleteUploadedFile
+);
+
 router.get("/:id", AuthMiddleware.authenticate, projectController.getProject);
 router.put("/:id", AuthMiddleware.authenticate, projectController.updateProject);
 router.delete("/:id", AuthMiddleware.authenticate, projectController.deleteProject);

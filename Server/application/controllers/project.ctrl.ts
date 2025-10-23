@@ -2,6 +2,7 @@ import { Response } from "express";
 import { ProjectRepository } from "../../infrastructure/repositories/project.repository";
 import { ProjectUtil } from "../../infrastructure/utils/project.util";
 import { AuthRequest } from "../../infrastructure/middleware/auth.middleware";
+import { deleteFile } from "../../infrastructure/utils/fileUpload.util";
 
 export class ProjectController {
   private projectRepository: ProjectRepository;
@@ -270,6 +271,14 @@ export class ProjectController {
         return;
       }
 
+      // Delete associated files
+      if (project.proposalFile) {
+        deleteFile(project.proposalFile);
+      }
+      if (project.whitePaper) {
+        deleteFile(project.whitePaper);
+      }
+
       await this.projectRepository.softDelete(id);
 
       res.status(200).json({
@@ -342,6 +351,70 @@ export class ProjectController {
       res.status(500).json({
         success: false,
         message: "Internal server error",
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  };
+
+  public uploadFile = async (
+    req: AuthRequest,
+    res: Response
+  ): Promise<void> => {
+    try {
+      if (!req.file) {
+        res.status(400).json({
+          success: false,
+          message: "No file uploaded",
+        });
+        return;
+      }
+
+      const fileUrl = `/uploads/${req.file.filename}`;
+
+      res.status(200).json({
+        success: true,
+        message: "File uploaded successfully",
+        data: {
+          filename: req.file.filename,
+          url: fileUrl,
+          size: req.file.size,
+          mimetype: req.file.mimetype,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "File upload failed",
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  };
+
+  public deleteUploadedFile = async (
+    req: AuthRequest,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { filename } = req.params;
+
+      if (!filename) {
+        res.status(400).json({
+          success: false,
+          message: "Filename is required",
+        });
+        return;
+      }
+
+      deleteFile(filename);
+
+      res.status(200).json({
+        success: true,
+        message: "File deleted successfully",
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "File deletion failed",
         error: error instanceof Error ? error.message : "Unknown error",
       });
     }

@@ -119,4 +119,26 @@ export class ProjectService {
     );
     return response.data;
   }
+
+  public static async uploadFile(
+    file: File
+  ): Promise<{
+    success: boolean;
+    message: string;
+    data: { filename: string; url: string; size: number; mimetype: string };
+  }> {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await apiClient.post("/api/projects/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  }
+
+  public static async deleteFile(filename: string): Promise<void> {
+    await apiClient.delete(`/api/projects/upload/${filename}`);
+  }
 }

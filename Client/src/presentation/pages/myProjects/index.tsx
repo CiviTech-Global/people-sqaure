@@ -18,24 +18,37 @@ import {
   CardActions,
   IconButton,
   Chip,
-  Alert,
   Switch,
   FormControlLabel,
   Stack,
+  LinearProgress,
+  FormHelperText,
 } from "@mui/material";
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Close as CloseIcon,
+  CloudUpload as CloudUploadIcon,
+  Description as DescriptionIcon,
+  Delete as RemoveIcon,
 } from "@mui/icons-material";
-import { Sidebar, GlassAppBar } from "../../components";
+import { Sidebar, GlassAppBar, StyledAlert } from "../../components";
 import { colors } from "../../themes";
 import {
   ProjectService,
   type Project,
   type CreateProjectData,
 } from "../../../services/api/project.service";
+
+interface FormErrors {
+  title?: string;
+  description?: string;
+  demoLink?: string;
+  github?: string;
+  linkedin?: string;
+  website?: string;
+}
 
 const MyProjectsPage = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -44,6 +57,8 @@ const MyProjectsPage = () => {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   const [formData, setFormData] = useState<CreateProjectData>({
     title: "",
@@ -62,6 +77,10 @@ const MyProjectsPage = () => {
     isRegistered: false,
   });
 
+  // File upload states
+  const [proposalFileObj, setProposalFileObj] = useState<File | null>(null);
+  const [whitePaperObj, setWhitePaperObj] = useState<File | null>(null);
+
   useEffect(() => {
     loadProjects();
   }, []);
@@ -76,6 +95,47 @@ const MyProjectsPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const validateForm = (): boolean => {
+    const errors: FormErrors = {};
+
+    if (!formData.title || formData.title.trim().length < 3) {
+      errors.title = "Title must be at least 3 characters long";
+    }
+
+    if (!formData.description || formData.description.trim().length < 10) {
+      errors.description = "Description must be at least 10 characters long";
+    }
+
+    if (formData.demoLink && formData.demoLink.trim()) {
+      const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+      if (!urlPattern.test(formData.demoLink)) {
+        errors.demoLink = "Invalid URL format";
+      }
+    }
+
+    if (formData.links?.github && formData.links.github.trim()) {
+      if (!formData.links.github.includes("github.com")) {
+        errors.github = "Invalid GitHub URL";
+      }
+    }
+
+    if (formData.links?.linkedin && formData.links.linkedin.trim()) {
+      if (!formData.links.linkedin.includes("linkedin.com")) {
+        errors.linkedin = "Invalid LinkedIn URL";
+      }
+    }
+
+    if (formData.links?.website && formData.links.website.trim()) {
+      const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+      if (!urlPattern.test(formData.links.website)) {
+        errors.website = "Invalid website URL";
+      }
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleOpenDialog = (project?: Project) => {
@@ -111,6 +171,9 @@ const MyProjectsPage = () => {
         isRegistered: false,
       });
     }
+    setProposalFileObj(null);
+    setWhitePaperObj(null);
+    setFormErrors({});
     setOpenDialog(true);
     setError("");
   };
@@ -118,13 +181,50 @@ const MyProjectsPage = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingProject(null);
+    setProposalFileObj(null);
+    setWhitePaperObj(null);
+    setFormErrors({});
+  };
+
+  const handleFileUpload = async (
+    file: File,
+    field: "proposalFile" | "whitePaper"
+  ) => {
+    try {
+      setUploading(true);
+      const response = await ProjectService.uploadFile(file);
+      setFormData({ ...formData, [field]: response.data.url });
+      setSuccess(`${field === "proposalFile" ? "Proposal" : "White Paper"} uploaded successfully`);
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err: any) {
+      setError(err.response?.data?.message || `Failed to upload ${field === "proposalFile" ? "proposal" : "white paper"}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileRemove = (field: "proposalFile" | "whitePaper") => {
+    setFormData({ ...formData, [field]: "" });
+    if (field === "proposalFile") {
+      setProposalFileObj(null);
+    } else {
+      setWhitePaperObj(null);
+    }
   };
 
   const handleSubmit = async () => {
+    if (!validateForm()) {
+      setError("Please fix the validation errors before submitting");
+      return;
+    }
+
     try {
-      if (!formData.title || !formData.description) {
-        setError("Title and description are required");
-        return;
+      // Upload files if new ones were selected
+      if (proposalFileObj) {
+        await handleFileUpload(proposalFileObj, "proposalFile");
+      }
+      if (whitePaperObj) {
+        await handleFileUpload(whitePaperObj, "whitePaper");
       }
 
       if (editingProject) {
@@ -197,18 +297,18 @@ const MyProjectsPage = () => {
 
         <Container maxWidth="xl" sx={{ py: 4 }}>
           {error && (
-            <Alert severity="error" onClose={() => setError("")} sx={{ mb: 2 }}>
+            <StyledAlert severity="error" onClose={() => setError("")} sx={{ mb: 2 }}>
               {error}
-            </Alert>
+            </StyledAlert>
           )}
           {success && (
-            <Alert
+            <StyledAlert
               severity="success"
               onClose={() => setSuccess("")}
               sx={{ mb: 2 }}
             >
               {success}
-            </Alert>
+            </StyledAlert>
           )}
 
           <Box
@@ -233,11 +333,18 @@ const MyProjectsPage = () => {
                 background: colors.primary.main,
                 color: colors.text.light,
                 textTransform: "none",
-                borderRadius: "50px",
+                borderRadius: "12px",
                 px: 3,
+                py: 1.5,
+                fontSize: "1rem",
+                fontWeight: 600,
+                boxShadow: `0 4px 12px ${colors.primary.main}40`,
                 "&:hover": {
                   background: colors.primary.dark,
+                  boxShadow: `0 6px 16px ${colors.primary.main}60`,
+                  transform: "translateY(-2px)",
                 },
+                transition: "all 0.3s ease",
               }}
             >
               New Project
@@ -271,6 +378,10 @@ const MyProjectsPage = () => {
                   borderColor: colors.primary.main,
                   color: colors.primary.main,
                   textTransform: "none",
+                  borderRadius: "12px",
+                  px: 3,
+                  py: 1.5,
+                  fontWeight: 600,
                   "&:hover": {
                     borderColor: colors.primary.dark,
                     background: colors.primary.lighter,
@@ -357,21 +468,39 @@ const MyProjectsPage = () => {
                       </Typography>
                     )}
                   </CardContent>
-                  <CardActions sx={{ p: 2, pt: 0, justifyContent: "flex-end" }}>
-                    <IconButton
+                  <CardActions sx={{ p: 2, pt: 0, justifyContent: "flex-end", gap: 1 }}>
+                    <Button
                       size="small"
+                      startIcon={<EditIcon />}
                       onClick={() => handleOpenDialog(project)}
-                      sx={{ color: colors.primary.main }}
+                      sx={{
+                        color: colors.primary.main,
+                        textTransform: "none",
+                        borderRadius: "8px",
+                        px: 2,
+                        "&:hover": {
+                          background: colors.primary.lighter,
+                        },
+                      }}
                     >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
+                      Edit
+                    </Button>
+                    <Button
                       size="small"
+                      startIcon={<DeleteIcon />}
                       onClick={() => handleDelete(project.id)}
-                      sx={{ color: "#f44336" }}
+                      sx={{
+                        color: "#f44336",
+                        textTransform: "none",
+                        borderRadius: "8px",
+                        px: 2,
+                        "&:hover": {
+                          background: "rgba(244, 67, 54, 0.1)",
+                        },
+                      }}
                     >
-                      <DeleteIcon />
-                    </IconButton>
+                      Delete
+                    </Button>
                   </CardActions>
                 </Card>
               ))}
@@ -386,7 +515,7 @@ const MyProjectsPage = () => {
           maxWidth="md"
           fullWidth
           PaperProps={{
-            sx: {
+            sx:{
               borderRadius: "16px",
             },
           }}
@@ -396,6 +525,7 @@ const MyProjectsPage = () => {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              pb: 1,
             }}
           >
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
@@ -405,8 +535,9 @@ const MyProjectsPage = () => {
               <CloseIcon />
             </IconButton>
           </DialogTitle>
+          {uploading && <LinearProgress />}
           <DialogContent dividers>
-            <Stack spacing={2}>
+            <Stack spacing={2.5}>
               <TextField
                 fullWidth
                 label="Project Title"
@@ -415,6 +546,8 @@ const MyProjectsPage = () => {
                   setFormData({ ...formData, title: e.target.value })
                 }
                 required
+                error={!!formErrors.title}
+                helperText={formErrors.title}
               />
               <TextField
                 fullWidth
@@ -426,6 +559,8 @@ const MyProjectsPage = () => {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 required
+                error={!!formErrors.description}
+                helperText={formErrors.description}
               />
               <TextField
                 fullWidth
@@ -436,25 +571,109 @@ const MyProjectsPage = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, readme: e.target.value })
                 }
+                placeholder="Detailed project information, setup instructions, etc."
               />
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                <TextField
-                  fullWidth
-                  label="Proposal File URL"
-                  value={formData.proposalFile}
-                  onChange={(e) =>
-                    setFormData({ ...formData, proposalFile: e.target.value })
-                  }
-                />
-                <TextField
-                  fullWidth
-                  label="White Paper URL"
-                  value={formData.whitePaper}
-                  onChange={(e) =>
-                    setFormData({ ...formData, whitePaper: e.target.value })
-                  }
-                />
-              </Stack>
+
+              {/* Proposal File Upload */}
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                  Proposal File (PDF, DOC, DOCX, PPT, PPTX)
+                </Typography>
+                {formData.proposalFile ? (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <DescriptionIcon sx={{ color: colors.primary.main }} />
+                    <Typography variant="body2" sx={{ flex: 1 }}>
+                      {formData.proposalFile}
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleFileRemove("proposalFile")}
+                    >
+                      <RemoveIcon />
+                    </IconButton>
+                  </Box>
+                ) : (
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    startIcon={<CloudUploadIcon />}
+                    sx={{
+                      borderColor: colors.primary.main,
+                      color: colors.primary.main,
+                      textTransform: "none",
+                      "&:hover": {
+                        borderColor: colors.primary.dark,
+                        background: colors.primary.lighter,
+                      },
+                    }}
+                  >
+                    Upload Proposal
+                    <input
+                      type="file"
+                      hidden
+                      accept=".pdf,.doc,.docx,.ppt,.pptx"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setProposalFileObj(file);
+                          handleFileUpload(file, "proposalFile");
+                        }
+                      }}
+                    />
+                  </Button>
+                )}
+              </Box>
+
+              {/* White Paper Upload */}
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                  White Paper (PDF, DOC, DOCX, PPT, PPTX)
+                </Typography>
+                {formData.whitePaper ? (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <DescriptionIcon sx={{ color: colors.primary.main }} />
+                    <Typography variant="body2" sx={{ flex: 1 }}>
+                      {formData.whitePaper}
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleFileRemove("whitePaper")}
+                    >
+                      <RemoveIcon />
+                    </IconButton>
+                  </Box>
+                ) : (
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    startIcon={<CloudUploadIcon />}
+                    sx={{
+                      borderColor: colors.primary.main,
+                      color: colors.primary.main,
+                      textTransform: "none",
+                      "&:hover": {
+                        borderColor: colors.primary.dark,
+                        background: colors.primary.lighter,
+                      },
+                    }}
+                  >
+                    Upload White Paper
+                    <input
+                      type="file"
+                      hidden
+                      accept=".pdf,.doc,.docx,.ppt,.pptx"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setWhitePaperObj(file);
+                          handleFileUpload(file, "whitePaper");
+                        }
+                      }}
+                    />
+                  </Button>
+                )}
+              </Box>
+
               <TextField
                 fullWidth
                 label="Demo Link"
@@ -462,6 +681,9 @@ const MyProjectsPage = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, demoLink: e.target.value })
                 }
+                error={!!formErrors.demoLink}
+                helperText={formErrors.demoLink}
+                placeholder="https://demo.yourproject.com"
               />
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <TextField
@@ -474,6 +696,9 @@ const MyProjectsPage = () => {
                       links: { ...formData.links, github: e.target.value },
                     })
                   }
+                  error={!!formErrors.github}
+                  helperText={formErrors.github}
+                  placeholder="https://github.com/username/repo"
                 />
                 <TextField
                   fullWidth
@@ -485,6 +710,9 @@ const MyProjectsPage = () => {
                       links: { ...formData.links, linkedin: e.target.value },
                     })
                   }
+                  error={!!formErrors.linkedin}
+                  helperText={formErrors.linkedin}
+                  placeholder="https://linkedin.com/in/username"
                 />
               </Stack>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
@@ -498,6 +726,9 @@ const MyProjectsPage = () => {
                       links: { ...formData.links, website: e.target.value },
                     })
                   }
+                  error={!!formErrors.website}
+                  helperText={formErrors.website}
+                  placeholder="https://yourproject.com"
                 />
                 <FormControl fullWidth>
                   <InputLabel>Investment Status</InputLabel>
@@ -531,29 +762,65 @@ const MyProjectsPage = () => {
                         isRegistered: e.target.checked,
                       })
                     }
+                    sx={{
+                      "& .MuiSwitch-switchBase.Mui-checked": {
+                        color: colors.primary.main,
+                      },
+                      "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
+                        {
+                          backgroundColor: colors.primary.main,
+                        },
+                    }}
                   />
                 }
                 label="Registered Project"
               />
             </Stack>
           </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button onClick={handleCloseDialog} sx={{ textTransform: "none" }}>
+          <DialogActions sx={{ p: 2.5, gap: 1 }}>
+            <Button
+              onClick={handleCloseDialog}
+              sx={{
+                textTransform: "none",
+                color: colors.text.secondary,
+                px: 3,
+                py: 1,
+                borderRadius: "8px",
+                "&:hover": {
+                  background: colors.background.lightGreen,
+                },
+              }}
+            >
               Cancel
             </Button>
             <Button
               variant="contained"
               onClick={handleSubmit}
+              disabled={uploading}
               sx={{
                 background: colors.primary.main,
                 color: colors.text.light,
                 textTransform: "none",
+                px: 3,
+                py: 1,
+                borderRadius: "8px",
+                fontWeight: 600,
+                boxShadow: `0 2px 8px ${colors.primary.main}40`,
                 "&:hover": {
                   background: colors.primary.dark,
+                  boxShadow: `0 4px 12px ${colors.primary.main}60`,
+                },
+                "&:disabled": {
+                  background: colors.text.muted,
+                  color: colors.text.light,
                 },
               }}
             >
-              {editingProject ? "Update" : "Create"}
+              {uploading
+                ? "Uploading..."
+                : editingProject
+                ? "Update Project"
+                : "Create Project"}
             </Button>
           </DialogActions>
         </Dialog>
