@@ -19,9 +19,10 @@ import {
   Logout as LogoutIcon,
   Person as PersonIcon,
   Add as AddIcon,
+  InsertDriveFile as FileIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { Sidebar, GlassAppBar, FilePreviewWidget } from "../../components";
+import { Sidebar, GlassAppBar, ProjectDetailsModal } from "../../components";
 import { useAuth } from "../../../context/AuthContext";
 import { colors } from "../../themes";
 import {
@@ -35,6 +36,8 @@ const HomePage = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   useEffect(() => {
     if (user?.role === "startup-owner") {
@@ -71,6 +74,16 @@ const HomePage = () => {
   const handleLogout = () => {
     logout();
     navigate("/login");
+  };
+
+  const handleViewDetails = (project: Project) => {
+    setSelectedProject(project);
+    setDetailsOpen(true);
+  };
+
+  const handleCloseDetails = () => {
+    setDetailsOpen(false);
+    setSelectedProject(null);
   };
 
   const getInvestmentStatusColor = (status: string) => {
@@ -296,7 +309,7 @@ const HomePage = () => {
                         >
                           {project.description}
                         </Typography>
-                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
+                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                           <Chip
                             label={getInvestmentStatusLabel(
                               project.investmentStatus
@@ -317,43 +330,34 @@ const HomePage = () => {
                               color="success"
                             />
                           )}
-                        </Box>
-                        {project.files && project.files.length > 0 && (
-                          <Box sx={{ mt: 2 }}>
-                            <Typography
-                              variant="subtitle2"
+                          {project.files && project.files.length > 0 && (
+                            <Chip
+                              icon={<FileIcon />}
+                              label={`${project.files.length} file${project.files.length > 1 ? 's' : ''}`}
+                              size="small"
                               sx={{
-                                fontWeight: 600,
-                                color: colors.text.primary,
-                                mb: 1,
-                                fontSize: "0.875rem",
+                                backgroundColor: "#42A5F5",
+                                color: colors.text.light,
+                                fontWeight: 500,
                               }}
-                            >
-                              Files
-                            </Typography>
-                            <Stack spacing={1}>
-                              {project.files.slice(0, 2).map((file) => (
-                                <FilePreviewWidget
-                                  key={file.id}
-                                  file={file}
-                                  onDownload={(f) =>
-                                    ProjectService.downloadFile(f.id, f.originalName)
-                                  }
-                                />
-                              ))}
-                            </Stack>
-                          </Box>
-                        )}
+                            />
+                          )}
+                        </Box>
                       </CardContent>
                       <CardActions sx={{ p: 2, pt: 0 }}>
                         <Button
-                          size="small"
-                          onClick={() => navigate(`/my-projects`)}
+                          fullWidth
+                          variant="contained"
+                          onClick={() => handleViewDetails(project)}
                           sx={{
-                            color: colors.primary.main,
+                            background: colors.primary.main,
+                            color: colors.text.light,
                             textTransform: "none",
+                            borderRadius: "8px",
+                            py: 1,
+                            fontWeight: 600,
                             "&:hover": {
-                              background: colors.primary.lighter,
+                              background: colors.primary.dark,
                             },
                           }}
                         >
@@ -368,6 +372,14 @@ const HomePage = () => {
           )}
         </Container>
       </Box>
+
+      {/* Project Details Modal */}
+      <ProjectDetailsModal
+        open={detailsOpen}
+        project={selectedProject}
+        onClose={handleCloseDetails}
+        showActions={false}
+      />
     </Box>
   );
 };

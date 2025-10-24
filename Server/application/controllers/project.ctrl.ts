@@ -65,10 +65,11 @@ export class ProjectController {
       const newProject = await this.projectRepository.create(sanitizedData);
 
       // Handle file uploads if files are present
-      const files = req.files as Express.Multer.File[] | undefined;
-      if (files && files.length > 0) {
-        for (const file of files) {
-          const fileType = file.fieldname as FileType;
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+      if (files) {
+        // Handle proposal file
+        if (files.proposal && files.proposal[0]) {
+          const file = files.proposal[0];
           await this.projectFileRepository.create({
             projectId: newProject.id,
             originalName: file.originalname,
@@ -76,7 +77,21 @@ export class ProjectController {
             filePath: `/uploads/${file.filename}`,
             mimeType: file.mimetype,
             fileSize: file.size,
-            fileType: fileType,
+            fileType: "proposal",
+          });
+        }
+
+        // Handle whitepaper file
+        if (files.whitepaper && files.whitepaper[0]) {
+          const file = files.whitepaper[0];
+          await this.projectFileRepository.create({
+            projectId: newProject.id,
+            originalName: file.originalname,
+            fileName: file.filename,
+            filePath: `/uploads/${file.filename}`,
+            mimeType: file.mimetype,
+            fileSize: file.size,
+            fileType: "whitepaper",
           });
         }
       }
@@ -282,15 +297,16 @@ export class ProjectController {
       );
 
       // Handle new file uploads if files are present
-      const files = req.files as Express.Multer.File[] | undefined;
-      if (files && files.length > 0) {
-        for (const file of files) {
-          const fileType = file.fieldname as FileType;
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+      if (files) {
+        // Handle proposal file
+        if (files.proposal && files.proposal[0]) {
+          const file = files.proposal[0];
 
-          // Delete old files of the same type
+          // Delete old proposal files
           const oldFiles = await this.projectFileRepository.findByProjectIdAndType(
             id,
-            fileType
+            "proposal"
           );
           for (const oldFile of oldFiles) {
             deleteFile(oldFile.fileName);
@@ -305,7 +321,33 @@ export class ProjectController {
             filePath: `/uploads/${file.filename}`,
             mimeType: file.mimetype,
             fileSize: file.size,
-            fileType: fileType,
+            fileType: "proposal",
+          });
+        }
+
+        // Handle whitepaper file
+        if (files.whitepaper && files.whitepaper[0]) {
+          const file = files.whitepaper[0];
+
+          // Delete old whitepaper files
+          const oldFiles = await this.projectFileRepository.findByProjectIdAndType(
+            id,
+            "whitepaper"
+          );
+          for (const oldFile of oldFiles) {
+            deleteFile(oldFile.fileName);
+            await this.projectFileRepository.softDelete(oldFile.id);
+          }
+
+          // Create new file entry
+          await this.projectFileRepository.create({
+            projectId: id,
+            originalName: file.originalname,
+            fileName: file.filename,
+            filePath: `/uploads/${file.filename}`,
+            mimeType: file.mimetype,
+            fileSize: file.size,
+            fileType: "whitepaper",
           });
         }
       }

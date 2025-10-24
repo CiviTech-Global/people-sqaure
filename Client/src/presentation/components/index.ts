@@ -8,3 +8,4 @@ export { ProtectedRoute } from "./routing/ProtectedRoute";
 export { PublicRoute } from "./routing/PublicRoute";
 export { StyledAlert } from "./StyledAlert";
 export { FilePreviewWidget } from "./FilePreviewWidget";
+export { ProjectDetailsModal } from "./ProjectDetailsModal";

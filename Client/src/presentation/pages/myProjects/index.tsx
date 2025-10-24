@@ -21,6 +21,8 @@ import {
   FormControlLabel,
   Stack,
   FormHelperText,
+  CircularProgress,
+  Backdrop,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -29,14 +31,14 @@ import {
   Close as CloseIcon,
   AttachFile as AttachFileIcon,
   InsertDriveFile as FileIcon,
+  CloudUpload as UploadIcon,
 } from "@mui/icons-material";
-import { Sidebar, GlassAppBar, StyledAlert, FilePreviewWidget } from "../../components";
+import { Sidebar, GlassAppBar, StyledAlert, ProjectDetailsModal } from "../../components";
 import { colors } from "../../themes";
 import {
   ProjectService,
   type Project,
   type CreateProjectData,
-  type ProjectFile,
 } from "../../../services/api/project.service";
 
 interface FormErrors {
@@ -57,6 +59,8 @@ const MyProjectsPage = () => {
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const [formData, setFormData] = useState<CreateProjectData>({
     title: "",
@@ -223,11 +227,27 @@ const MyProjectsPage = () => {
     try {
       await ProjectService.deleteProject(id);
       setSuccess("Project deleted successfully!");
+      handleCloseDetails();
       loadProjects();
       setTimeout(() => setSuccess(""), 5000);
     } catch (err) {
       setError("Failed to delete project");
     }
+  };
+
+  const handleViewDetails = (project: Project) => {
+    setSelectedProject(project);
+    setDetailsOpen(true);
+  };
+
+  const handleCloseDetails = () => {
+    setDetailsOpen(false);
+    setSelectedProject(null);
+  };
+
+  const handleEditFromDetails = (project: Project) => {
+    handleCloseDetails();
+    handleOpenDialog(project);
   };
 
   const getInvestmentStatusColor = (status: string) => {
@@ -421,7 +441,7 @@ const MyProjectsPage = () => {
                       {project.description}
                     </Typography>
                     <Box
-                      sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}
+                      sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}
                     >
                       <Chip
                         label={getInvestmentStatusLabel(
@@ -439,67 +459,38 @@ const MyProjectsPage = () => {
                       {project.isRegistered && (
                         <Chip label="Registered" size="small" color="success" />
                       )}
-                    </Box>
-                    {project.files && project.files.length > 0 && (
-                      <Box sx={{ mt: 2 }}>
-                        <Typography
-                          variant="subtitle2"
+                      {project.files && project.files.length > 0 && (
+                        <Chip
+                          icon={<FileIcon />}
+                          label={`${project.files.length} file${project.files.length > 1 ? 's' : ''}`}
+                          size="small"
                           sx={{
-                            fontWeight: 600,
-                            color: colors.text.primary,
-                            mb: 1,
+                            backgroundColor: "#42A5F5",
+                            color: colors.text.light,
+                            fontWeight: 500,
                           }}
-                        >
-                          Files
-                        </Typography>
-                        <Stack spacing={1}>
-                          {project.files.map((file) => (
-                            <FilePreviewWidget
-                              key={file.id}
-                              file={file}
-                              onDownload={(f) =>
-                                ProjectService.downloadFile(f.id, f.originalName)
-                              }
-                            />
-                          ))}
-                        </Stack>
-                      </Box>
-                    )}
+                        />
+                      )}
+                    </Box>
                   </CardContent>
-                  <CardActions
-                    sx={{ p: 2, pt: 0, justifyContent: "flex-end", gap: 1 }}
-                  >
+                  <CardActions sx={{ p: 2, pt: 0 }}>
                     <Button
-                      size="small"
-                      startIcon={<EditIcon />}
-                      onClick={() => handleOpenDialog(project)}
+                      fullWidth
+                      variant="contained"
+                      onClick={() => handleViewDetails(project)}
                       sx={{
-                        color: colors.primary.main,
+                        background: colors.primary.main,
+                        color: colors.text.light,
                         textTransform: "none",
                         borderRadius: "8px",
-                        px: 2,
+                        py: 1,
+                        fontWeight: 600,
                         "&:hover": {
-                          background: colors.primary.lighter,
+                          background: colors.primary.dark,
                         },
                       }}
                     >
-                      Edit
-                    </Button>
-                    <Button
-                      size="small"
-                      startIcon={<DeleteIcon />}
-                      onClick={() => handleDelete(project.id)}
-                      sx={{
-                        color: "#f44336",
-                        textTransform: "none",
-                        borderRadius: "8px",
-                        px: 2,
-                        "&:hover": {
-                          background: "rgba(244, 67, 54, 0.1)",
-                        },
-                      }}
-                    >
-                      Delete
+                      View Details
                     </Button>
                   </CardActions>
                 </Card>
@@ -543,6 +534,32 @@ const MyProjectsPage = () => {
             </Button>
           </DialogTitle>
           <DialogContent dividers>
+            {/* File Upload Info Banner */}
+            {!editingProject && (
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${colors.primary.lighter}30 0%, ${colors.primary.lighter}10 100%)`,
+                  border: `2px solid ${colors.primary.lighter}`,
+                  borderRadius: "12px",
+                  p: 2,
+                  mb: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
+                <UploadIcon sx={{ fontSize: 32, color: colors.primary.main }} />
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: colors.text.primary }}>
+                    Ready to upload your files!
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: colors.text.secondary }}>
+                    You can attach proposal and white paper documents (PDF, DOC, DOCX, PPT, PPTX). Files will be uploaded when you create the project.
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+
             <Stack spacing={2.5}>
               <TextField
                 fullWidth
@@ -580,37 +597,38 @@ const MyProjectsPage = () => {
                 placeholder="Detailed project information, setup instructions, etc."
               />
 
-              {/* Proposal File */}
+              {/* Proposal File Upload */}
               <Box>
                 <Typography
                   variant="subtitle2"
-                  sx={{ mb: 1, fontWeight: 600, color: colors.text.primary }}
+                  sx={{ mb: 1.5, fontWeight: 700, color: colors.text.primary }}
                 >
                   Proposal File
                 </Typography>
-                <Button
+                <Box
                   component="label"
-                  variant="outlined"
-                  startIcon={<AttachFileIcon />}
-                  fullWidth
                   sx={{
-                    borderColor: colors.primary.main,
-                    color: colors.primary.main,
-                    textTransform: "none",
-                    py: 1.5,
-                    borderRadius: "8px",
-                    justifyContent: "flex-start",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: "140px",
+                    border: `2px dashed ${proposalFile ? colors.primary.main : colors.primary.lighter}`,
+                    borderRadius: "12px",
+                    background: proposalFile
+                      ? `linear-gradient(135deg, ${colors.primary.lighter}40 0%, ${colors.primary.lighter}20 100%)`
+                      : colors.background.lightGreen,
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                    p: 3,
                     "&:hover": {
-                      borderColor: colors.primary.dark,
-                      background: colors.primary.lighter,
+                      borderColor: colors.primary.main,
+                      background: `linear-gradient(135deg, ${colors.primary.lighter}50 0%, ${colors.primary.lighter}30 100%)`,
+                      transform: "translateY(-2px)",
+                      boxShadow: `0 4px 12px ${colors.primary.main}20`,
                     },
                   }}
                 >
-                  {proposalFile
-                    ? proposalFile.name
-                    : editingProject && getFileByType(editingProject, "proposal")
-                    ? getFileByType(editingProject, "proposal")?.originalName
-                    : "Choose Proposal File (PDF, DOC, DOCX, PPT, PPTX)"}
                   <input
                     type="file"
                     hidden
@@ -620,46 +638,96 @@ const MyProjectsPage = () => {
                       if (file) setProposalFile(file);
                     }}
                   />
-                </Button>
-                {proposalFile && (
-                  <FormHelperText sx={{ mt: 1 }}>
-                    Selected: {proposalFile.name} (
-                    {(proposalFile.size / 1024 / 1024).toFixed(2)} MB)
-                  </FormHelperText>
-                )}
+                  {proposalFile ? (
+                    <>
+                      <FileIcon sx={{ fontSize: 48, color: colors.primary.main, mb: 1 }} />
+                      <Typography
+                        variant="body1"
+                        sx={{ fontWeight: 600, color: colors.text.primary, mb: 0.5, textAlign: "center" }}
+                      >
+                        {proposalFile.name}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: colors.text.muted }}>
+                        {(proposalFile.size / 1024 / 1024).toFixed(2)} MB
+                      </Typography>
+                      <Button
+                        size="small"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setProposalFile(null);
+                        }}
+                        sx={{
+                          mt: 1,
+                          textTransform: "none",
+                          color: "#f44336",
+                          fontSize: "0.75rem",
+                        }}
+                      >
+                        Remove file
+                      </Button>
+                    </>
+                  ) : editingProject && getFileByType(editingProject, "proposal") ? (
+                    <>
+                      <FileIcon sx={{ fontSize: 48, color: colors.text.muted, mb: 1 }} />
+                      <Typography
+                        variant="body2"
+                        sx={{ color: colors.text.secondary, mb: 0.5, textAlign: "center" }}
+                      >
+                        Current: {getFileByType(editingProject, "proposal")?.originalName}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: colors.primary.main, fontWeight: 600 }}>
+                        Click to replace
+                      </Typography>
+                    </>
+                  ) : (
+                    <>
+                      <AttachFileIcon sx={{ fontSize: 48, color: colors.primary.main, mb: 1 }} />
+                      <Typography
+                        variant="body1"
+                        sx={{ fontWeight: 600, color: colors.text.primary, mb: 0.5 }}
+                      >
+                        Drop proposal file here or click to browse
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: colors.text.muted }}>
+                        Supports: PDF, DOC, DOCX, PPT, PPTX (Max 10MB)
+                      </Typography>
+                    </>
+                  )}
+                </Box>
               </Box>
 
-              {/* White Paper File */}
+              {/* White Paper File Upload */}
               <Box>
                 <Typography
                   variant="subtitle2"
-                  sx={{ mb: 1, fontWeight: 600, color: colors.text.primary }}
+                  sx={{ mb: 1.5, fontWeight: 700, color: colors.text.primary }}
                 >
                   White Paper
                 </Typography>
-                <Button
+                <Box
                   component="label"
-                  variant="outlined"
-                  startIcon={<AttachFileIcon />}
-                  fullWidth
                   sx={{
-                    borderColor: colors.primary.main,
-                    color: colors.primary.main,
-                    textTransform: "none",
-                    py: 1.5,
-                    borderRadius: "8px",
-                    justifyContent: "flex-start",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: "140px",
+                    border: `2px dashed ${whitepaperFile ? colors.primary.main : colors.primary.lighter}`,
+                    borderRadius: "12px",
+                    background: whitepaperFile
+                      ? `linear-gradient(135deg, ${colors.primary.lighter}40 0%, ${colors.primary.lighter}20 100%)`
+                      : colors.background.lightGreen,
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                    p: 3,
                     "&:hover": {
-                      borderColor: colors.primary.dark,
-                      background: colors.primary.lighter,
+                      borderColor: colors.primary.main,
+                      background: `linear-gradient(135deg, ${colors.primary.lighter}50 0%, ${colors.primary.lighter}30 100%)`,
+                      transform: "translateY(-2px)",
+                      boxShadow: `0 4px 12px ${colors.primary.main}20`,
                     },
                   }}
                 >
-                  {whitepaperFile
-                    ? whitepaperFile.name
-                    : editingProject && getFileByType(editingProject, "whitepaper")
-                    ? getFileByType(editingProject, "whitepaper")?.originalName
-                    : "Choose White Paper (PDF, DOC, DOCX, PPT, PPTX)"}
                   <input
                     type="file"
                     hidden
@@ -669,13 +737,62 @@ const MyProjectsPage = () => {
                       if (file) setWhitepaperFile(file);
                     }}
                   />
-                </Button>
-                {whitepaperFile && (
-                  <FormHelperText sx={{ mt: 1 }}>
-                    Selected: {whitepaperFile.name} (
-                    {(whitepaperFile.size / 1024 / 1024).toFixed(2)} MB)
-                  </FormHelperText>
-                )}
+                  {whitepaperFile ? (
+                    <>
+                      <FileIcon sx={{ fontSize: 48, color: colors.primary.main, mb: 1 }} />
+                      <Typography
+                        variant="body1"
+                        sx={{ fontWeight: 600, color: colors.text.primary, mb: 0.5, textAlign: "center" }}
+                      >
+                        {whitepaperFile.name}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: colors.text.muted }}>
+                        {(whitepaperFile.size / 1024 / 1024).toFixed(2)} MB
+                      </Typography>
+                      <Button
+                        size="small"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setWhitepaperFile(null);
+                        }}
+                        sx={{
+                          mt: 1,
+                          textTransform: "none",
+                          color: "#f44336",
+                          fontSize: "0.75rem",
+                        }}
+                      >
+                        Remove file
+                      </Button>
+                    </>
+                  ) : editingProject && getFileByType(editingProject, "whitepaper") ? (
+                    <>
+                      <FileIcon sx={{ fontSize: 48, color: colors.text.muted, mb: 1 }} />
+                      <Typography
+                        variant="body2"
+                        sx={{ color: colors.text.secondary, mb: 0.5, textAlign: "center" }}
+                      >
+                        Current: {getFileByType(editingProject, "whitepaper")?.originalName}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: colors.primary.main, fontWeight: 600 }}>
+                        Click to replace
+                      </Typography>
+                    </>
+                  ) : (
+                    <>
+                      <AttachFileIcon sx={{ fontSize: 48, color: colors.primary.main, mb: 1 }} />
+                      <Typography
+                        variant="body1"
+                        sx={{ fontWeight: 600, color: colors.text.primary, mb: 0.5 }}
+                      >
+                        Drop white paper here or click to browse
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: colors.text.muted }}>
+                        Supports: PDF, DOC, DOCX, PPT, PPTX (Max 10MB)
+                      </Typography>
+                    </>
+                  )}
+                </Box>
               </Box>
 
               <TextField
@@ -802,33 +919,67 @@ const MyProjectsPage = () => {
               variant="contained"
               onClick={handleSubmit}
               disabled={submitting}
+              startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <UploadIcon />}
               sx={{
                 background: colors.primary.main,
                 color: colors.text.light,
                 textTransform: "none",
-                px: 3,
-                py: 1,
+                px: 4,
+                py: 1.2,
                 borderRadius: "8px",
                 fontWeight: 600,
                 boxShadow: `0 2px 8px ${colors.primary.main}40`,
                 "&:hover": {
                   background: colors.primary.dark,
                   boxShadow: `0 4px 12px ${colors.primary.main}60`,
+                  transform: "translateY(-1px)",
                 },
                 "&:disabled": {
                   background: colors.text.muted,
                   color: colors.text.light,
                 },
+                transition: "all 0.3s ease",
               }}
             >
               {submitting
-                ? "Saving..."
+                ? "Uploading..."
                 : editingProject
                 ? "Update Project"
                 : "Create Project"}
             </Button>
           </DialogActions>
+
+          {/* Loading Backdrop */}
+          <Backdrop
+            open={submitting}
+            sx={{
+              position: "absolute",
+              zIndex: (theme) => theme.zIndex.drawer + 1,
+              background: "rgba(255, 255, 255, 0.8)",
+              backdropFilter: "blur(4px)",
+            }}
+          >
+            <Box sx={{ textAlign: "center" }}>
+              <CircularProgress sx={{ color: colors.primary.main, mb: 2 }} size={60} />
+              <Typography variant="h6" sx={{ color: colors.text.primary, fontWeight: 600 }}>
+                {editingProject ? "Updating project..." : "Creating project..."}
+              </Typography>
+              <Typography variant="body2" sx={{ color: colors.text.secondary, mt: 1 }}>
+                {(proposalFile || whitepaperFile) && "Uploading files, please wait..."}
+              </Typography>
+            </Box>
+          </Backdrop>
         </Dialog>
+
+        {/* Project Details Modal */}
+        <ProjectDetailsModal
+          open={detailsOpen}
+          project={selectedProject}
+          onClose={handleCloseDetails}
+          onEdit={handleEditFromDetails}
+          onDelete={handleDelete}
+          showActions={true}
+        />
       </Box>
     </Box>
   );

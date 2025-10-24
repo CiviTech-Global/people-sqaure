@@ -62,29 +62,51 @@ export const FilePreviewWidget = ({ file, onDownload }: FilePreviewWidgetProps) 
     <>
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${colors.background.white} 0%, ${colors.primary.lighter}20 100%)`,
-          borderRadius: "12px",
-          border: `1px solid ${colors.primary.lighter}`,
-          p: 2,
+          background: `linear-gradient(135deg, ${colors.background.white} 0%, ${colors.primary.lighter}30 100%)`,
+          borderRadius: "14px",
+          border: `2px solid ${colors.primary.lighter}`,
+          p: 2.5,
           display: "flex",
           alignItems: "center",
-          gap: 2,
-          transition: "all 0.3s ease",
+          gap: 2.5,
+          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          position: "relative",
+          overflow: "hidden",
           "&:hover": {
-            boxShadow: `0 4px 12px ${colors.primary.main}20`,
-            transform: "translateY(-2px)",
+            boxShadow: `0 8px 24px ${colors.primary.main}30`,
+            transform: "translateY(-4px)",
+            borderColor: colors.primary.main,
+          },
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: "4px",
+            background: `linear-gradient(90deg, ${colors.primary.main}, #42A5F5)`,
+            opacity: 0,
+            transition: "opacity 0.3s ease",
+          },
+          "&:hover::before": {
+            opacity: 1,
           },
         }}
       >
         <Box
           sx={{
-            minWidth: 60,
-            height: 60,
+            minWidth: 64,
+            height: 64,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: colors.background.lightGreen,
-            borderRadius: "8px",
+            background: `linear-gradient(135deg, ${colors.background.lightGreen} 0%, ${colors.primary.lighter}50 100%)`,
+            borderRadius: "12px",
+            border: `1px solid ${colors.primary.lighter}`,
+            transition: "transform 0.3s ease",
+            "&:hover": {
+              transform: "scale(1.1) rotate(5deg)",
+            },
           }}
         >
           {getFileIcon()}
@@ -121,32 +143,40 @@ export const FilePreviewWidget = ({ file, onDownload }: FilePreviewWidgetProps) 
           </Typography>
         </Box>
 
-        <Box sx={{ display: "flex", gap: 0.5 }}>
+        <Box sx={{ display: "flex", gap: 1 }}>
           {file.mimeType.includes("pdf") && (
             <IconButton
-              size="small"
+              size="medium"
               onClick={handlePreview}
               sx={{
                 color: colors.primary.main,
+                background: colors.primary.lighter,
+                transition: "all 0.3s ease",
                 "&:hover": {
-                  background: colors.primary.lighter,
+                  background: colors.primary.main,
+                  color: colors.text.light,
+                  transform: "scale(1.1)",
                 },
               }}
-              title="Preview"
+              title="Preview PDF"
             >
               <ViewIcon />
             </IconButton>
           )}
           <IconButton
-            size="small"
+            size="medium"
             onClick={handleDownload}
             sx={{
               color: colors.primary.main,
+              background: colors.primary.lighter,
+              transition: "all 0.3s ease",
               "&:hover": {
-                background: colors.primary.lighter,
+                background: colors.primary.main,
+                color: colors.text.light,
+                transform: "scale(1.1)",
               },
             }}
-            title="Download"
+            title="Download File"
           >
             <DownloadIcon />
           </IconButton>

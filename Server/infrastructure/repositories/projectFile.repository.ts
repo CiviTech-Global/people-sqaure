@@ -1,6 +1,7 @@
 import { AppDataSource } from "../database/data-source";
 import { ProjectFile, FileType } from "../../domain/projectFile/projectFile.entity";
 import { ICreateProjectFile, IUpdateProjectFile } from "../../domain/projectFile/projectFile.model";
+import { IsNull } from "typeorm";
 
 export class ProjectFileRepository {
   private repository = AppDataSource.getRepository(ProjectFile);
@@ -12,13 +13,13 @@ export class ProjectFileRepository {
 
   public async findById(id: string): Promise<ProjectFile | null> {
     return await this.repository.findOne({
-      where: { id, deletedAt: null },
+      where: { id, deletedAt: IsNull() },
     });
   }
 
   public async findByProjectId(projectId: string): Promise<ProjectFile[]> {
     return await this.repository.find({
-      where: { projectId, deletedAt: null },
+      where: { projectId, deletedAt: IsNull() },
       order: { createdAt: "DESC" },
     });
   }
@@ -28,7 +29,7 @@ export class ProjectFileRepository {
     fileType: FileType
   ): Promise<ProjectFile[]> {
     return await this.repository.find({
-      where: { projectId, fileType, deletedAt: null },
+      where: { projectId, fileType, deletedAt: IsNull() },
       order: { createdAt: "DESC" },
     });
   }

@@ -14,15 +14,52 @@ const app: Application = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+// Apply helmet to all routes EXCEPT /uploads
+app.use((req, res, next) => {
+  if (req.path.startsWith('/uploads')) {
+    return next();
+  }
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "blob:"],
+        fontSrc: ["'self'", "data:"],
+        frameSrc: ["'self'", "blob:"],
+        objectSrc: ["'self'"],
+      },
+    },
+  })(req, res, next);
+});
+app.use(cors({
+  origin: ["http://localhost:5173", "http://localhost:3000"],
+  credentials: true,
 }));
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded files
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Serve uploaded files with proper headers for embedding
+app.use("/uploads", (req, res, next) => {
+  // Remove any CSP headers
+  res.removeHeader("Content-Security-Policy");
+  res.removeHeader("X-Content-Security-Policy");
+
+  // Set headers to allow embedding
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("X-Frame-Options", "ALLOWALL");
+
+  // For PDFs specifically
+  if (req.path.endsWith('.pdf')) {
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "inline");
+  }
+
+  next();
+}, express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.get("/", (req: Request, res: Response) => {
