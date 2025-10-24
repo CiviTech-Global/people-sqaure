@@ -6,9 +6,11 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   ManyToOne,
+  OneToMany,
   JoinColumn,
 } from "typeorm";
 import { User } from "../user/user.entity";
+import { ProjectFile } from "../projectFile/projectFile.entity";
 
 export type InvestmentStatus =
   | "self-sponsored"
@@ -38,12 +40,6 @@ export class Project {
   readme?: string;
 
   @Column({ type: "varchar", length: 500, nullable: true })
-  proposalFile?: string;
-
-  @Column({ type: "varchar", length: 500, nullable: true })
-  whitePaper?: string;
-
-  @Column({ type: "varchar", length: 500, nullable: true })
   demoLink?: string;
 
   @Column({ type: "jsonb", nullable: true })
@@ -65,6 +61,9 @@ export class Project {
   @ManyToOne(() => User, { onDelete: "CASCADE" })
   @JoinColumn({ name: "ownerId" })
   owner!: User;
+
+  @OneToMany(() => ProjectFile, (file) => file.project)
+  files!: ProjectFile[];
 
   @CreateDateColumn()
   createdAt!: Date;

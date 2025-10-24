@@ -7,7 +7,15 @@ const router = Router();
 const projectController = new ProjectController();
 
 // Protected routes - all project routes require authentication
-router.post("/", AuthMiddleware.authenticate, projectController.createProject);
+router.post(
+  "/",
+  AuthMiddleware.authenticate,
+  upload.fields([
+    { name: "proposal", maxCount: 1 },
+    { name: "whitepaper", maxCount: 1 },
+  ]),
+  projectController.createProject
+);
 router.get("/", AuthMiddleware.authenticate, projectController.getAllProjects);
 router.get("/my-projects", AuthMiddleware.authenticate, projectController.getMyProjects);
 router.get("/registered", AuthMiddleware.authenticate, projectController.getRegisteredProjects);
@@ -30,8 +38,23 @@ router.delete(
   projectController.deleteUploadedFile
 );
 
+// File download route
+router.get(
+  "/file/:fileId/download",
+  AuthMiddleware.authenticate,
+  projectController.downloadFile
+);
+
 router.get("/:id", AuthMiddleware.authenticate, projectController.getProject);
-router.put("/:id", AuthMiddleware.authenticate, projectController.updateProject);
+router.put(
+  "/:id",
+  AuthMiddleware.authenticate,
+  upload.fields([
+    { name: "proposal", maxCount: 1 },
+    { name: "whitepaper", maxCount: 1 },
+  ]),
+  projectController.updateProject
+);
 router.delete("/:id", AuthMiddleware.authenticate, projectController.deleteProject);
 
 export default router;

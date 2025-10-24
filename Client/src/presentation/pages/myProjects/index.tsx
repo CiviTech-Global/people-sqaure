@@ -16,12 +16,10 @@ import {
   Card,
   CardContent,
   CardActions,
-  IconButton,
   Chip,
   Switch,
   FormControlLabel,
   Stack,
-  LinearProgress,
   FormHelperText,
 } from "@mui/material";
 import {
@@ -29,16 +27,16 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Close as CloseIcon,
-  CloudUpload as CloudUploadIcon,
-  Description as DescriptionIcon,
-  Delete as RemoveIcon,
+  AttachFile as AttachFileIcon,
+  InsertDriveFile as FileIcon,
 } from "@mui/icons-material";
-import { Sidebar, GlassAppBar, StyledAlert } from "../../components";
+import { Sidebar, GlassAppBar, StyledAlert, FilePreviewWidget } from "../../components";
 import { colors } from "../../themes";
 import {
   ProjectService,
   type Project,
   type CreateProjectData,
+  type ProjectFile,
 } from "../../../services/api/project.service";
 
 interface FormErrors {
@@ -57,15 +55,13 @@ const MyProjectsPage = () => {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   const [formData, setFormData] = useState<CreateProjectData>({
     title: "",
     description: "",
     readme: "",
-    proposalFile: "",
-    whitePaper: "",
     demoLink: "",
     links: {
       github: "",
@@ -77,9 +73,9 @@ const MyProjectsPage = () => {
     isRegistered: false,
   });
 
-  // File upload states
-  const [proposalFileObj, setProposalFileObj] = useState<File | null>(null);
-  const [whitePaperObj, setWhitePaperObj] = useState<File | null>(null);
+  // File states
+  const [proposalFile, setProposalFile] = useState<File | null>(null);
+  const [whitepaperFile, setWhitepaperFile] = useState<File | null>(null);
 
   useEffect(() => {
     loadProjects();
@@ -145,8 +141,6 @@ const MyProjectsPage = () => {
         title: project.title,
         description: project.description,
         readme: project.readme || "",
-        proposalFile: project.proposalFile || "",
-        whitePaper: project.whitePaper || "",
         demoLink: project.demoLink || "",
         links: project.links || {
           github: "",
@@ -163,16 +157,14 @@ const MyProjectsPage = () => {
         title: "",
         description: "",
         readme: "",
-        proposalFile: "",
-        whitePaper: "",
         demoLink: "",
         links: { github: "", linkedin: "", website: "", demo: "" },
         investmentStatus: "self-sponsored",
         isRegistered: false,
       });
     }
-    setProposalFileObj(null);
-    setWhitePaperObj(null);
+    setProposalFile(null);
+    setWhitepaperFile(null);
     setFormErrors({});
     setOpenDialog(true);
     setError("");
@@ -181,35 +173,9 @@ const MyProjectsPage = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingProject(null);
-    setProposalFileObj(null);
-    setWhitePaperObj(null);
+    setProposalFile(null);
+    setWhitepaperFile(null);
     setFormErrors({});
-  };
-
-  const handleFileUpload = async (
-    file: File,
-    field: "proposalFile" | "whitePaper"
-  ) => {
-    try {
-      setUploading(true);
-      const response = await ProjectService.uploadFile(file);
-      setFormData({ ...formData, [field]: response.data.url });
-      setSuccess(`${field === "proposalFile" ? "Proposal" : "White Paper"} uploaded successfully`);
-      setTimeout(() => setSuccess(""), 3000);
-    } catch (err: any) {
-      setError(err.response?.data?.message || `Failed to upload ${field === "proposalFile" ? "proposal" : "white paper"}`);
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleFileRemove = (field: "proposalFile" | "whitePaper") => {
-    setFormData({ ...formData, [field]: "" });
-    if (field === "proposalFile") {
-      setProposalFileObj(null);
-    } else {
-      setWhitePaperObj(null);
-    }
   };
 
   const handleSubmit = async () => {
@@ -219,27 +185,34 @@ const MyProjectsPage = () => {
     }
 
     try {
-      // Upload files if new ones were selected
-      if (proposalFileObj) {
-        await handleFileUpload(proposalFileObj, "proposalFile");
-      }
-      if (whitePaperObj) {
-        await handleFileUpload(whitePaperObj, "whitePaper");
-      }
+      setSubmitting(true);
+      setError("");
+
+      const dataToSubmit: CreateProjectData = {
+        ...formData,
+        proposalFile: proposalFile || undefined,
+        whitepaperFile: whitepaperFile || undefined,
+      };
 
       if (editingProject) {
-        await ProjectService.updateProject(editingProject.id, formData);
-        setSuccess("Project updated successfully");
+        await ProjectService.updateProject(editingProject.id, dataToSubmit);
+        setSuccess("Project updated successfully!");
       } else {
-        await ProjectService.createProject(formData);
-        setSuccess("Project created successfully");
+        await ProjectService.createProject(dataToSubmit);
+        setSuccess("Project created successfully!");
       }
 
       handleCloseDialog();
       loadProjects();
-      setTimeout(() => setSuccess(""), 3000);
+      setTimeout(() => setSuccess(""), 5000);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to save project");
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Failed to save project"
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -249,9 +222,9 @@ const MyProjectsPage = () => {
 
     try {
       await ProjectService.deleteProject(id);
-      setSuccess("Project deleted successfully");
+      setSuccess("Project deleted successfully!");
       loadProjects();
-      setTimeout(() => setSuccess(""), 3000);
+      setTimeout(() => setSuccess(""), 5000);
     } catch (err) {
       setError("Failed to delete project");
     }
@@ -283,6 +256,10 @@ const MyProjectsPage = () => {
     }
   };
 
+  const getFileByType = (project: Project, fileType: string) => {
+    return project.files?.find((f) => f.fileType === fileType);
+  };
+
   return (
     <Box
       sx={{
@@ -297,7 +274,11 @@ const MyProjectsPage = () => {
 
         <Container maxWidth="xl" sx={{ py: 4 }}>
           {error && (
-            <StyledAlert severity="error" onClose={() => setError("")} sx={{ mb: 2 }}>
+            <StyledAlert
+              severity="error"
+              onClose={() => setError("")}
+              sx={{ mb: 2 }}
+            >
               {error}
             </StyledAlert>
           )}
@@ -459,16 +440,35 @@ const MyProjectsPage = () => {
                         <Chip label="Registered" size="small" color="success" />
                       )}
                     </Box>
-                    {project.demoLink && (
-                      <Typography
-                        variant="caption"
-                        sx={{ color: colors.text.muted }}
-                      >
-                        Demo: {project.demoLink}
-                      </Typography>
+                    {project.files && project.files.length > 0 && (
+                      <Box sx={{ mt: 2 }}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{
+                            fontWeight: 600,
+                            color: colors.text.primary,
+                            mb: 1,
+                          }}
+                        >
+                          Files
+                        </Typography>
+                        <Stack spacing={1}>
+                          {project.files.map((file) => (
+                            <FilePreviewWidget
+                              key={file.id}
+                              file={file}
+                              onDownload={(f) =>
+                                ProjectService.downloadFile(f.id, f.originalName)
+                              }
+                            />
+                          ))}
+                        </Stack>
+                      </Box>
                     )}
                   </CardContent>
-                  <CardActions sx={{ p: 2, pt: 0, justifyContent: "flex-end", gap: 1 }}>
+                  <CardActions
+                    sx={{ p: 2, pt: 0, justifyContent: "flex-end", gap: 1 }}
+                  >
                     <Button
                       size="small"
                       startIcon={<EditIcon />}
@@ -515,7 +515,7 @@ const MyProjectsPage = () => {
           maxWidth="md"
           fullWidth
           PaperProps={{
-            sx:{
+            sx: {
               borderRadius: "16px",
             },
           }}
@@ -531,11 +531,17 @@ const MyProjectsPage = () => {
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
               {editingProject ? "Edit Project" : "Create New Project"}
             </Typography>
-            <IconButton onClick={handleCloseDialog}>
+            <Button
+              onClick={handleCloseDialog}
+              sx={{
+                minWidth: "auto",
+                p: 1,
+                color: colors.text.secondary,
+              }}
+            >
               <CloseIcon />
-            </IconButton>
+            </Button>
           </DialogTitle>
-          {uploading && <LinearProgress />}
           <DialogContent dividers>
             <Stack spacing={2.5}>
               <TextField
@@ -574,103 +580,101 @@ const MyProjectsPage = () => {
                 placeholder="Detailed project information, setup instructions, etc."
               />
 
-              {/* Proposal File Upload */}
+              {/* Proposal File */}
               <Box>
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                  Proposal File (PDF, DOC, DOCX, PPT, PPTX)
+                <Typography
+                  variant="subtitle2"
+                  sx={{ mb: 1, fontWeight: 600, color: colors.text.primary }}
+                >
+                  Proposal File
                 </Typography>
-                {formData.proposalFile ? (
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <DescriptionIcon sx={{ color: colors.primary.main }} />
-                    <Typography variant="body2" sx={{ flex: 1 }}>
-                      {formData.proposalFile}
-                    </Typography>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleFileRemove("proposalFile")}
-                    >
-                      <RemoveIcon />
-                    </IconButton>
-                  </Box>
-                ) : (
-                  <Button
-                    component="label"
-                    variant="outlined"
-                    startIcon={<CloudUploadIcon />}
-                    sx={{
-                      borderColor: colors.primary.main,
-                      color: colors.primary.main,
-                      textTransform: "none",
-                      "&:hover": {
-                        borderColor: colors.primary.dark,
-                        background: colors.primary.lighter,
-                      },
+                <Button
+                  component="label"
+                  variant="outlined"
+                  startIcon={<AttachFileIcon />}
+                  fullWidth
+                  sx={{
+                    borderColor: colors.primary.main,
+                    color: colors.primary.main,
+                    textTransform: "none",
+                    py: 1.5,
+                    borderRadius: "8px",
+                    justifyContent: "flex-start",
+                    "&:hover": {
+                      borderColor: colors.primary.dark,
+                      background: colors.primary.lighter,
+                    },
+                  }}
+                >
+                  {proposalFile
+                    ? proposalFile.name
+                    : editingProject && getFileByType(editingProject, "proposal")
+                    ? getFileByType(editingProject, "proposal")?.originalName
+                    : "Choose Proposal File (PDF, DOC, DOCX, PPT, PPTX)"}
+                  <input
+                    type="file"
+                    hidden
+                    accept=".pdf,.doc,.docx,.ppt,.pptx"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setProposalFile(file);
                     }}
-                  >
-                    Upload Proposal
-                    <input
-                      type="file"
-                      hidden
-                      accept=".pdf,.doc,.docx,.ppt,.pptx"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setProposalFileObj(file);
-                          handleFileUpload(file, "proposalFile");
-                        }
-                      }}
-                    />
-                  </Button>
+                  />
+                </Button>
+                {proposalFile && (
+                  <FormHelperText sx={{ mt: 1 }}>
+                    Selected: {proposalFile.name} (
+                    {(proposalFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </FormHelperText>
                 )}
               </Box>
 
-              {/* White Paper Upload */}
+              {/* White Paper File */}
               <Box>
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                  White Paper (PDF, DOC, DOCX, PPT, PPTX)
+                <Typography
+                  variant="subtitle2"
+                  sx={{ mb: 1, fontWeight: 600, color: colors.text.primary }}
+                >
+                  White Paper
                 </Typography>
-                {formData.whitePaper ? (
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <DescriptionIcon sx={{ color: colors.primary.main }} />
-                    <Typography variant="body2" sx={{ flex: 1 }}>
-                      {formData.whitePaper}
-                    </Typography>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleFileRemove("whitePaper")}
-                    >
-                      <RemoveIcon />
-                    </IconButton>
-                  </Box>
-                ) : (
-                  <Button
-                    component="label"
-                    variant="outlined"
-                    startIcon={<CloudUploadIcon />}
-                    sx={{
-                      borderColor: colors.primary.main,
-                      color: colors.primary.main,
-                      textTransform: "none",
-                      "&:hover": {
-                        borderColor: colors.primary.dark,
-                        background: colors.primary.lighter,
-                      },
+                <Button
+                  component="label"
+                  variant="outlined"
+                  startIcon={<AttachFileIcon />}
+                  fullWidth
+                  sx={{
+                    borderColor: colors.primary.main,
+                    color: colors.primary.main,
+                    textTransform: "none",
+                    py: 1.5,
+                    borderRadius: "8px",
+                    justifyContent: "flex-start",
+                    "&:hover": {
+                      borderColor: colors.primary.dark,
+                      background: colors.primary.lighter,
+                    },
+                  }}
+                >
+                  {whitepaperFile
+                    ? whitepaperFile.name
+                    : editingProject && getFileByType(editingProject, "whitepaper")
+                    ? getFileByType(editingProject, "whitepaper")?.originalName
+                    : "Choose White Paper (PDF, DOC, DOCX, PPT, PPTX)"}
+                  <input
+                    type="file"
+                    hidden
+                    accept=".pdf,.doc,.docx,.ppt,.pptx"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setWhitepaperFile(file);
                     }}
-                  >
-                    Upload White Paper
-                    <input
-                      type="file"
-                      hidden
-                      accept=".pdf,.doc,.docx,.ppt,.pptx"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setWhitePaperObj(file);
-                          handleFileUpload(file, "whitePaper");
-                        }
-                      }}
-                    />
-                  </Button>
+                  />
+                </Button>
+                {whitepaperFile && (
+                  <FormHelperText sx={{ mt: 1 }}>
+                    Selected: {whitepaperFile.name} (
+                    {(whitepaperFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </FormHelperText>
                 )}
               </Box>
 
@@ -780,6 +784,7 @@ const MyProjectsPage = () => {
           <DialogActions sx={{ p: 2.5, gap: 1 }}>
             <Button
               onClick={handleCloseDialog}
+              disabled={submitting}
               sx={{
                 textTransform: "none",
                 color: colors.text.secondary,
@@ -796,7 +801,7 @@ const MyProjectsPage = () => {
             <Button
               variant="contained"
               onClick={handleSubmit}
-              disabled={uploading}
+              disabled={submitting}
               sx={{
                 background: colors.primary.main,
                 color: colors.text.light,
@@ -816,8 +821,8 @@ const MyProjectsPage = () => {
                 },
               }}
             >
-              {uploading
-                ? "Uploading..."
+              {submitting
+                ? "Saving..."
                 : editingProject
                 ? "Update Project"
                 : "Create Project"}

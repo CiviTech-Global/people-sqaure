@@ -8,13 +8,25 @@ export interface ProjectLinks {
   other?: string[];
 }
 
+export interface ProjectFile {
+  id: string;
+  projectId: string;
+  originalName: string;
+  fileName: string;
+  filePath: string;
+  mimeType: string;
+  fileSize: number;
+  fileType: "proposal" | "whitepaper" | "other";
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Project {
   id: string;
   title: string;
   description: string;
   readme?: string;
-  proposalFile?: string;
-  whitePaper?: string;
   demoLink?: string;
   links?: ProjectLinks;
   investmentStatus:
@@ -23,6 +35,7 @@ export interface Project {
     | "looking-for-more-sponsors";
   isRegistered: boolean;
   ownerId: string;
+  files?: ProjectFile[];
   createdAt: string;
   updatedAt: string;
 }
@@ -31,8 +44,6 @@ export interface CreateProjectData {
   title: string;
   description: string;
   readme?: string;
-  proposalFile?: string;
-  whitePaper?: string;
   demoLink?: string;
   links?: ProjectLinks;
   investmentStatus?:
@@ -40,6 +51,8 @@ export interface CreateProjectData {
     | "looking-for-first-sponsor"
     | "looking-for-more-sponsors";
   isRegistered?: boolean;
+  proposalFile?: File;
+  whitepaperFile?: File;
 }
 
 export interface UpdateProjectData extends Partial<CreateProjectData> {}
@@ -60,9 +73,34 @@ export class ProjectService {
   public static async createProject(
     data: CreateProjectData
   ): Promise<ProjectResponse> {
+    const formData = new FormData();
+
+    // Append text fields
+    formData.append("title", data.title);
+    formData.append("description", data.description);
+    if (data.readme) formData.append("readme", data.readme);
+    if (data.demoLink) formData.append("demoLink", data.demoLink);
+    if (data.links) formData.append("links", JSON.stringify(data.links));
+    if (data.investmentStatus)
+      formData.append("investmentStatus", data.investmentStatus);
+    formData.append("isRegistered", String(data.isRegistered || false));
+
+    // Append files
+    if (data.proposalFile) {
+      formData.append("proposal", data.proposalFile);
+    }
+    if (data.whitepaperFile) {
+      formData.append("whitepaper", data.whitepaperFile);
+    }
+
     const response = await apiClient.post<ProjectResponse>(
       "/api/projects",
-      data
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
     return response.data;
   }
@@ -90,9 +128,35 @@ export class ProjectService {
     id: string,
     data: UpdateProjectData
   ): Promise<ProjectResponse> {
+    const formData = new FormData();
+
+    // Append text fields
+    if (data.title) formData.append("title", data.title);
+    if (data.description) formData.append("description", data.description);
+    if (data.readme !== undefined) formData.append("readme", data.readme);
+    if (data.demoLink !== undefined) formData.append("demoLink", data.demoLink);
+    if (data.links) formData.append("links", JSON.stringify(data.links));
+    if (data.investmentStatus)
+      formData.append("investmentStatus", data.investmentStatus);
+    if (data.isRegistered !== undefined)
+      formData.append("isRegistered", String(data.isRegistered));
+
+    // Append files
+    if (data.proposalFile) {
+      formData.append("proposal", data.proposalFile);
+    }
+    if (data.whitepaperFile) {
+      formData.append("whitepaper", data.whitepaperFile);
+    }
+
     const response = await apiClient.put<ProjectResponse>(
       `/api/projects/${id}`,
-      data
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
     return response.data;
   }
@@ -140,5 +204,21 @@ export class ProjectService {
 
   public static async deleteFile(filename: string): Promise<void> {
     await apiClient.delete(`/api/projects/upload/${filename}`);
+  }
+
+  public static async downloadFile(fileId: string, originalName: string): Promise<void> {
+    const response = await apiClient.get(`/api/projects/file/${fileId}/download`, {
+      responseType: "blob",
+    });
+
+    // Create download link
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", originalName);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
   }
 }

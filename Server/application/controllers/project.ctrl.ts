@@ -1,14 +1,18 @@
 import { Response } from "express";
 import { ProjectRepository } from "../../infrastructure/repositories/project.repository";
+import { ProjectFileRepository } from "../../infrastructure/repositories/projectFile.repository";
 import { ProjectUtil } from "../../infrastructure/utils/project.util";
 import { AuthRequest } from "../../infrastructure/middleware/auth.middleware";
 import { deleteFile } from "../../infrastructure/utils/fileUpload.util";
+import { FileType } from "../../domain/projectFile/projectFile.entity";
 
 export class ProjectController {
   private projectRepository: ProjectRepository;
+  private projectFileRepository: ProjectFileRepository;
 
   constructor() {
     this.projectRepository = new ProjectRepository();
+    this.projectFileRepository = new ProjectFileRepository();
   }
 
   public createProject = async (
@@ -20,8 +24,6 @@ export class ProjectController {
         title,
         description,
         readme,
-        proposalFile,
-        whitePaper,
         demoLink,
         links,
         investmentStatus,
@@ -42,8 +44,6 @@ export class ProjectController {
         title,
         description,
         readme,
-        proposalFile,
-        whitePaper,
         demoLink,
         links,
         investmentStatus: investmentStatus || "self-sponsored",
@@ -64,10 +64,35 @@ export class ProjectController {
 
       const newProject = await this.projectRepository.create(sanitizedData);
 
+      // Handle file uploads if files are present
+      const files = req.files as Express.Multer.File[] | undefined;
+      if (files && files.length > 0) {
+        for (const file of files) {
+          const fileType = file.fieldname as FileType;
+          await this.projectFileRepository.create({
+            projectId: newProject.id,
+            originalName: file.originalname,
+            fileName: file.filename,
+            filePath: `/uploads/${file.filename}`,
+            mimeType: file.mimetype,
+            fileSize: file.size,
+            fileType: fileType,
+          });
+        }
+      }
+
+      // Fetch project with files
+      const projectFiles = await this.projectFileRepository.findByProjectId(
+        newProject.id
+      );
+
       res.status(201).json({
         success: true,
         message: "Project created successfully",
-        data: newProject.toJSON(),
+        data: {
+          ...newProject.toJSON(),
+          files: projectFiles.map((f) => f.toJSON()),
+        },
       });
     } catch (error) {
       res.status(500).json({
@@ -95,9 +120,14 @@ export class ProjectController {
         return;
       }
 
+      const projectFiles = await this.projectFileRepository.findByProjectId(id);
+
       res.status(200).json({
         success: true,
-        data: project.toJSON(),
+        data: {
+          ...project.toJSON(),
+          files: projectFiles.map((f) => f.toJSON()),
+        },
       });
     } catch (error) {
       res.status(500).json({
@@ -114,12 +144,24 @@ export class ProjectController {
   ): Promise<void> => {
     try {
       const projects = await this.projectRepository.findAll();
-      const projectsData = projects.map((project) => project.toJSON());
+
+      // Fetch files for each project
+      const projectsWithFiles = await Promise.all(
+        projects.map(async (project) => {
+          const files = await this.projectFileRepository.findByProjectId(
+            project.id
+          );
+          return {
+            ...project.toJSON(),
+            files: files.map((f) => f.toJSON()),
+          };
+        })
+      );
 
       res.status(200).json({
         success: true,
-        data: projectsData,
-        count: projectsData.length,
+        data: projectsWithFiles,
+        count: projectsWithFiles.length,
       });
     } catch (error) {
       res.status(500).json({
@@ -146,12 +188,24 @@ export class ProjectController {
       }
 
       const projects = await this.projectRepository.findByOwnerId(ownerId);
-      const projectsData = projects.map((project) => project.toJSON());
+
+      // Fetch files for each project
+      const projectsWithFiles = await Promise.all(
+        projects.map(async (project) => {
+          const files = await this.projectFileRepository.findByProjectId(
+            project.id
+          );
+          return {
+            ...project.toJSON(),
+            files: files.map((f) => f.toJSON()),
+          };
+        })
+      );
 
       res.status(200).json({
         success: true,
-        data: projectsData,
-        count: projectsData.length,
+        data: projectsWithFiles,
+        count: projectsWithFiles.length,
       });
     } catch (error) {
       res.status(500).json({
@@ -172,8 +226,6 @@ export class ProjectController {
         title,
         description,
         readme,
-        proposalFile,
-        whitePaper,
         demoLink,
         links,
         investmentStatus,
@@ -204,8 +256,6 @@ export class ProjectController {
         title,
         description,
         readme,
-        proposalFile,
-        whitePaper,
         demoLink,
         links,
         investmentStatus,
@@ -231,10 +281,45 @@ export class ProjectController {
         sanitizedData
       );
 
+      // Handle new file uploads if files are present
+      const files = req.files as Express.Multer.File[] | undefined;
+      if (files && files.length > 0) {
+        for (const file of files) {
+          const fileType = file.fieldname as FileType;
+
+          // Delete old files of the same type
+          const oldFiles = await this.projectFileRepository.findByProjectIdAndType(
+            id,
+            fileType
+          );
+          for (const oldFile of oldFiles) {
+            deleteFile(oldFile.fileName);
+            await this.projectFileRepository.softDelete(oldFile.id);
+          }
+
+          // Create new file entry
+          await this.projectFileRepository.create({
+            projectId: id,
+            originalName: file.originalname,
+            fileName: file.filename,
+            filePath: `/uploads/${file.filename}`,
+            mimeType: file.mimetype,
+            fileSize: file.size,
+            fileType: fileType,
+          });
+        }
+      }
+
+      // Fetch updated project with files
+      const projectFiles = await this.projectFileRepository.findByProjectId(id);
+
       res.status(200).json({
         success: true,
         message: "Project updated successfully",
-        data: updatedProject?.toJSON(),
+        data: {
+          ...updatedProject?.toJSON(),
+          files: projectFiles.map((f) => f.toJSON()),
+        },
       });
     } catch (error) {
       res.status(500).json({
@@ -272,12 +357,11 @@ export class ProjectController {
       }
 
       // Delete associated files
-      if (project.proposalFile) {
-        deleteFile(project.proposalFile);
+      const projectFiles = await this.projectFileRepository.findByProjectId(id);
+      for (const file of projectFiles) {
+        deleteFile(file.fileName);
       }
-      if (project.whitePaper) {
-        deleteFile(project.whitePaper);
-      }
+      await this.projectFileRepository.deleteByProjectId(id);
 
       await this.projectRepository.softDelete(id);
 
@@ -318,12 +402,23 @@ export class ProjectController {
       const projects = await this.projectRepository.findByInvestmentStatus(
         status
       );
-      const projectsData = projects.map((project) => project.toJSON());
+
+      const projectsWithFiles = await Promise.all(
+        projects.map(async (project) => {
+          const files = await this.projectFileRepository.findByProjectId(
+            project.id
+          );
+          return {
+            ...project.toJSON(),
+            files: files.map((f) => f.toJSON()),
+          };
+        })
+      );
 
       res.status(200).json({
         success: true,
-        data: projectsData,
-        count: projectsData.length,
+        data: projectsWithFiles,
+        count: projectsWithFiles.length,
       });
     } catch (error) {
       res.status(500).json({
@@ -340,12 +435,23 @@ export class ProjectController {
   ): Promise<void> => {
     try {
       const projects = await this.projectRepository.findRegistered();
-      const projectsData = projects.map((project) => project.toJSON());
+
+      const projectsWithFiles = await Promise.all(
+        projects.map(async (project) => {
+          const files = await this.projectFileRepository.findByProjectId(
+            project.id
+          );
+          return {
+            ...project.toJSON(),
+            files: files.map((f) => f.toJSON()),
+          };
+        })
+      );
 
       res.status(200).json({
         success: true,
-        data: projectsData,
-        count: projectsData.length,
+        data: projectsWithFiles,
+        count: projectsWithFiles.length,
       });
     } catch (error) {
       res.status(500).json({
@@ -415,6 +521,60 @@ export class ProjectController {
       res.status(500).json({
         success: false,
         message: "File deletion failed",
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  };
+
+  public downloadFile = async (
+    req: AuthRequest,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { fileId } = req.params;
+
+      const file = await this.projectFileRepository.findById(fileId);
+
+      if (!file) {
+        res.status(404).json({
+          success: false,
+          message: "File not found",
+        });
+        return;
+      }
+
+      // Verify user has access to this file's project
+      const project = await this.projectRepository.findById(file.projectId);
+      if (!project) {
+        res.status(404).json({
+          success: false,
+          message: "Project not found",
+        });
+        return;
+      }
+
+      const path = require("path");
+      const filePath = path.join(
+        __dirname,
+        "../../uploads",
+        file.fileName
+      );
+
+      res.download(filePath, file.originalName, (err) => {
+        if (err) {
+          console.error("Download error:", err);
+          if (!res.headersSent) {
+            res.status(500).json({
+              success: false,
+              message: "File download failed",
+            });
+          }
+        }
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "File download failed",
         error: error instanceof Error ? error.message : "Unknown error",
       });
     }

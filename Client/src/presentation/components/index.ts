@@ -7,3 +7,4 @@ export { Sidebar } from "./layout/Sidebar/Sidebar";
 export { ProtectedRoute } from "./routing/ProtectedRoute";
 export { PublicRoute } from "./routing/PublicRoute";
 export { StyledAlert } from "./StyledAlert";
+export { FilePreviewWidget } from "./FilePreviewWidget";

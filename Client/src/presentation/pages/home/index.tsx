@@ -13,6 +13,7 @@ import {
   CardActions,
   Button,
   Chip,
+  Stack,
 } from "@mui/material";
 import {
   Logout as LogoutIcon,
@@ -20,7 +21,7 @@ import {
   Add as AddIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { Sidebar, GlassAppBar } from "../../components";
+import { Sidebar, GlassAppBar, FilePreviewWidget } from "../../components";
 import { useAuth } from "../../../context/AuthContext";
 import { colors } from "../../themes";
 import {
@@ -295,7 +296,7 @@ const HomePage = () => {
                         >
                           {project.description}
                         </Typography>
-                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
                           <Chip
                             label={getInvestmentStatusLabel(
                               project.investmentStatus
@@ -317,6 +318,32 @@ const HomePage = () => {
                             />
                           )}
                         </Box>
+                        {project.files && project.files.length > 0 && (
+                          <Box sx={{ mt: 2 }}>
+                            <Typography
+                              variant="subtitle2"
+                              sx={{
+                                fontWeight: 600,
+                                color: colors.text.primary,
+                                mb: 1,
+                                fontSize: "0.875rem",
+                              }}
+                            >
+                              Files
+                            </Typography>
+                            <Stack spacing={1}>
+                              {project.files.slice(0, 2).map((file) => (
+                                <FilePreviewWidget
+                                  key={file.id}
+                                  file={file}
+                                  onDownload={(f) =>
+                                    ProjectService.downloadFile(f.id, f.originalName)
+                                  }
+                                />
+                              ))}
+                            </Stack>
+                          </Box>
+                        )}
                       </CardContent>
                       <CardActions sx={{ p: 2, pt: 0 }}>
                         <Button
